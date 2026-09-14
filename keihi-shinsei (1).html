@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="（株）アニマ社員経費">
+<meta name="theme-color" content="#13253d">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<title>（株）アニマ社員経費</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f8fc;
+    --navy-900: #1c3a5c;
+    --navy-800: #2f7ab5;
+    --navy-700: #4a92cc;
+    --accent: #2f9e6f;
+    --accent-soft: #e6f6ee;
+    --card: #ffffff;
+    --border: #e2eaf2;
+    --ink: #26313d;
+    --ink-soft: #72808f;
+    --danger: #c0483c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Noto Sans JP', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .app { max-width: 480px; margin: 0 auto; padding: 0 16px 48px; }
+
+  .header-band {
+    background: linear-gradient(160deg, #ffffff, #eaf3fb);
+    border: 1px solid var(--border);
+    margin: 0 -16px 24px;
+    padding: 26px 16px 22px;
+    border-radius: 0 0 20px 20px;
+    border-top: none;
+    box-shadow: 0 2px 10px rgba(47,122,181,0.08);
+  }
+  .chip {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--navy-800);
+    background: var(--accent-soft);
+    padding: 4px 11px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .header-band h1 {
+    font-size: 21px;
+    font-weight: 800;
+    color: var(--navy-900);
+    margin: 0 0 6px;
+    letter-spacing: 0.01em;
+  }
+  .header-band .subtitle { margin: 0; font-size: 13px; color: var(--ink-soft); }
+
+  h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy-900);
+    margin: 0 0 14px;
+    padding-left: 11px;
+    border-left: 3px solid var(--accent);
+  }
+
+  .entry-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 16px 20px;
+    box-shadow: 0 2px 10px rgba(19,37,61,0.06);
+    margin-bottom: 26px;
+  }
+
+  .field { margin-bottom: 15px; }
+  .field label { display: block; font-size: 12.5px; font-weight: 500; color: var(--ink-soft); margin-bottom: 5px; }
+  .field input[type="text"],
+  .field input[type="number"],
+  .field select {
+    width: 100%;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 16px;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+  }
+  .field select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%);
+    background-position: calc(100% - 18px) center, calc(100% - 13px) center;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  .add-category-btn {
+    margin-top: 7px;
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 2px 0;
+    cursor: pointer;
+  }
+  .new-category-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .mini-btn {
+    flex: 1;
+    border: none;
+    border-radius: 7px;
+    padding: 9px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+  }
+  .mini-btn-primary { background: var(--navy-800); color: #fff; }
+  .mini-btn-primary:active { background: var(--navy-900); }
+  .mini-btn-secondary { background: var(--accent-soft); color: var(--navy-800); }
+
+  .confirm-overlay {
+    position: fixed; inset: 0; background: rgba(15,22,32,0.5);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+    z-index: 70;
+  }
+  .confirm-overlay[hidden] { display: none !important; }
+  .confirm-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 18px;
+    max-width: 320px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(15,22,32,0.25);
+  }
+  .confirm-box p { margin: 0 0 16px; font-size: 14px; color: var(--ink); }
+  .confirm-actions { display: flex; gap: 10px; }
+  .confirm-btn {
+    flex: 1;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 13.5px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+  }
+  .confirm-btn-secondary { background: var(--accent-soft); color: var(--navy-800); }
+  .confirm-btn-danger { background: var(--danger); color: #fff; }
+
+  .amount-wrap { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; background: #fff; overflow: hidden; }
+  .amount-wrap .yen {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    padding: 0 10px;
+    color: var(--navy-800);
+    border-right: 1px solid var(--border);
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    background: var(--accent-soft);
+  }
+  .amount-wrap input {
+    border: none !important;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: right;
+  }
+  .amount-wrap input:focus { box-shadow: none !important; }
+
+  .receipt-upload { position: relative; }
+  .receipt-upload input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .receipt-preview {
+    border: 1.5px dashed var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--ink-soft);
+    background: #f7f9fb;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .receipt-preview.has-image { padding: 0; border-style: solid; }
+  .receipt-preview img { width: 100%; max-height: 220px; object-fit: contain; display: block; background: #eee; }
+
+  .submit-btn {
+    width: 100%;
+    background: var(--navy-800);
+    color: #fdfcf7;
+    border: none;
+    border-radius: 8px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    letter-spacing: 0.02em;
+    margin-top: 4px;
+    cursor: pointer;
+  }
+  .submit-btn:active { background: var(--navy-900); }
+
+  .form-error {
+    color: var(--danger);
+    font-size: 12.5px;
+    margin: 8px 0 0;
+  }
+
+  #entries-list { display: flex; flex-direction: column; gap: 10px; }
+  .empty-state {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 26px 10px;
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.5);
+  }
+
+  .ledger-row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 12px;
+    display: grid;
+    grid-template-columns: 52px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    box-shadow: 0 1px 4px rgba(19,37,61,0.04);
+  }
+  .ledger-row .thumb {
+    width: 52px; height: 52px; border-radius: 7px; overflow: hidden;
+    background: #eee; border: 1px solid var(--border); cursor: pointer;
+  }
+  .ledger-row .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ledger-row .meta { min-width: 0; }
+  .ledger-row .category { font-weight: 700; font-size: 14px; margin: 0 0 3px; color: var(--navy-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ledger-row .sub { font-size: 12px; color: var(--ink-soft); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ledger-row .amount-col { text-align: right; }
+  .ledger-row .amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--navy-800);
+    white-space: nowrap;
+  }
+  .ledger-row .del-btn {
+    display: block;
+    margin-top: 6px;
+    border: none;
+    background: none;
+    color: var(--danger);
+    font-size: 11.5px;
+    cursor: pointer;
+    padding: 2px 0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .lightbox {
+    position: fixed; inset: 0; background: rgba(15,22,32,0.86);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+    z-index: 50;
+  }
+  .lightbox[hidden] { display: none !important; }
+  .lightbox img { max-width: 100%; max-height: 100%; border-radius: 6px; }
+
+  .toast {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--navy-900);
+    color: #fdfcf7;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    z-index: 60;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+/* 大きな利用日入力 */
+#expenseDate {
+  width: 100%;
+  max-width: 100%;
+  min-height: 62px;
+  box-sizing: border-box;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  -webkit-appearance: none;
+  appearance: none;
+}
+#expenseDate:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.employee-hint { font-size: 12.5px; margin: 6px 0 0; color: var(--ink-soft); }
+.employee-hint.found { color: var(--navy-800); font-weight: 700; }
+
+.directory-toggle {
+  width: 100%;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy-800);
+  text-align: left;
+  margin-bottom: 26px;
+  cursor: pointer;
+}
+.directory-panel { margin-top: -14px; margin-bottom: 26px; }
+.directory-panel[hidden] { display: none; }
+.directory-row-edit {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.directory-row-edit input {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 14px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+}
+.directory-row-edit input:nth-child(1) { width: 90px; flex-shrink: 0; }
+.directory-row-edit input:nth-child(2) { flex: 1; min-width: 0; }
+.directory-list { display: flex; flex-direction: column; gap: 6px; }
+.directory-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.directory-item .dno { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--navy-800); width: 42px; flex-shrink: 0; }
+.directory-item .dname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.directory-item button {
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.directory-item .edit-link { color: var(--accent); }
+.directory-item .del-link { color: var(--danger); }
+
+</style>
+</head>
+<body>
+<div id="login-overlay" class="confirm-overlay" hidden style="background: var(--bg); align-items: flex-start; padding-top: 60px;">
+  <div class="confirm-box" style="max-width: 340px;">
+    <p style="font-weight:700; font-size:16px; margin-bottom:14px;">あなたの社員番号を選択してください</p>
+    <div class="field" style="margin-bottom:14px;">
+      <select id="loginEmployeeSelect">
+        <option value="" disabled selected>選択してください</option>
+      </select>
+    </div>
+    <button type="button" id="loginBtn" class="mini-btn mini-btn-primary" style="width:100%;">ログインする</button>
+  </div>
+</div>
+<div class="app">
+  <header class="header-band">
+    <span class="chip">経費精算</span>
+    <h1>（株）アニマ社員経費</h1>
+    <p class="subtitle">社員番号・項目・金額・領収書の写真を記録します</p>
+  </header>
+
+  <p id="logged-in-as" class="employee-hint" style="margin-bottom:8px;"></p>
+  <button type="button" id="refresh-directories-btn" class="add-category-btn" style="margin-bottom:16px;">🔄 最新の社員・現場・項目に更新</button>
+
+  <button type="button" id="directory-toggle-btn" class="directory-toggle">▸ 社員番号・氏名の登録／編集</button>
+  <div id="directory-panel" class="directory-panel" hidden>
+    <section class="entry-card">
+      <h2>社員一覧</h2>
+      <div class="directory-row-edit">
+        <input type="text" id="dirNo" inputmode="numeric" placeholder="番号">
+        <input type="text" id="dirName" placeholder="氏名">
+      </div>
+      <button type="button" id="dirSaveBtn" class="mini-btn mini-btn-primary" style="width:100%; margin-bottom:14px;">登録・更新する</button>
+      <div id="directory-list" class="directory-list"></div>
+    </section>
+  </div>
+
+  <button type="button" id="site-directory-toggle-btn" class="directory-toggle">▸ 現場名の登録／編集</button>
+  <div id="site-directory-panel" class="directory-panel" hidden>
+    <section class="entry-card">
+      <h2>現場一覧</h2>
+      <div class="directory-row-edit">
+        <input type="text" id="siteDirName" placeholder="現場名" style="flex:1;">
+      </div>
+      <button type="button" id="siteDirSaveBtn" class="mini-btn mini-btn-primary" style="width:100%; margin-bottom:14px;">追加・更新する</button>
+      <div id="site-directory-list" class="directory-list"></div>
+    </section>
+  </div>
+
+  <button type="button" id="category-directory-toggle-btn" class="directory-toggle">▸ 項目の登録／編集</button>
+  <div id="category-directory-panel" class="directory-panel" hidden>
+    <section class="entry-card">
+      <h2>追加した項目一覧</h2>
+      <p class="employee-hint" style="margin-bottom:10px;">※電車代・タクシー代など初期からある項目はここには出ません。「＋新しい項目を追加」で追加したものだけ編集できます。</p>
+      <div class="directory-row-edit">
+        <input type="text" id="catDirName" placeholder="項目名" style="flex:1;">
+      </div>
+      <button type="button" id="catDirSaveBtn" class="mini-btn mini-btn-primary" style="width:100%; margin-bottom:14px;">追加・更新する</button>
+      <div id="category-directory-list" class="directory-list"></div>
+    </section>
+  </div>
+
+  <section class="entry-card">
+    <h2>新規申請</h2>
+    <form id="expense-form">
+      <div class="field">
+        <label for="employeeNo">社員番号</label>
+        <select id="employeeNo" required>
+          <option value="" disabled selected>選択してください</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="expenseDate">利用日</label>
+        <input type="date" id="expenseDate" required>
+      </div>
+      <div class="field">
+        <label for="siteName">現場名</label>
+        <select id="siteName">
+          <option value="">－ 指定なし －</option>
+        </select>
+        <button type="button" id="add-site-btn" class="add-category-btn">＋ 新しい現場を追加</button>
+      </div>
+      <div class="field" id="new-site-field" hidden>
+        <label for="newSiteName">新しい現場名</label>
+        <input type="text" id="newSiteName" placeholder="例）○○新築工事">
+        <div class="new-category-actions">
+          <button type="button" id="new-site-cancel" class="mini-btn mini-btn-secondary">キャンセル</button>
+          <button type="button" id="new-site-confirm" class="mini-btn mini-btn-primary">追加する</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="category">項目</label>
+        <select id="category" required>
+          <option value="" disabled selected>選択してください</option>
+          <option value="電車代">電車代</option>
+          <option value="新幹線代">新幹線代</option>
+          <option value="宿泊ホテル代">宿泊ホテル代</option>
+          <option value="打ち合わせ会議食事">打ち合わせ会議食事</option>
+          <option value="タクシー代">タクシー代</option>
+          <option value="事務用品">事務用品</option>
+          <option value="消耗品">消耗品</option>
+          <option value="現場消耗品">現場消耗品</option>
+          <option value="接待食事">接待食事</option>
+          <option value="その他">その他</option>
+        </select>
+        <button type="button" id="add-category-btn" class="add-category-btn">＋ 新しい項目を追加</button>
+      </div>
+      <div class="field" id="new-category-field" hidden>
+        <label for="newCategoryName">新しい項目名</label>
+        <input type="text" id="newCategoryName" placeholder="例）郵送費">
+        <div class="new-category-actions">
+          <button type="button" id="new-category-cancel" class="mini-btn mini-btn-secondary">キャンセル</button>
+          <button type="button" id="new-category-confirm" class="mini-btn mini-btn-primary">追加する</button>
+        </div>
+      </div>
+      <div class="field" id="category-other-field" hidden>
+        <label for="categoryOther">その他の内容</label>
+        <input type="text" id="categoryOther" placeholder="例）郵送費">
+      </div>
+      <div class="field">
+        <label for="memo">摘要（任意）</label>
+        <input type="text" id="memo" placeholder="例）取引先打合せ用資料印刷代">
+      </div>
+      <div class="field">
+        <label for="paymentMethod">支払方法</label>
+        <select id="paymentMethod" required>
+          <option value="">選択してください</option>
+          <option value="現金">現金</option>
+          <option value="会社クレジット：アメックス">会社クレジット：アメックス</option>
+          <option value="会社クレジット：三井住友プラチナ">会社クレジット：三井住友プラチナ</option>
+          <option value="会社クレジット：京葉VISA">会社クレジット：京葉VISA</option>
+          <option value="個人クレジット">個人クレジット</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="amount">金額</label>
+        <div class="amount-wrap">
+          <span class="yen">¥</span>
+          <input type="number" id="amount" min="0" step="1" inputmode="numeric" placeholder="0" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="receipt">領収書の写真</label>
+        <div class="receipt-upload">
+          <div id="receipt-preview" class="receipt-preview">タップして撮影・選択</div>
+          <input type="file" id="receipt" accept="image/*" capture="environment" required>
+        </div>
+      </div>
+      <button type="submit" class="submit-btn">登録する</button>
+      <p id="form-error" class="form-error" hidden></p>
+    </form>
+  </section>
+
+  <section class="history">
+    <h2>申請履歴</h2>
+    <p id="storage-status" class="employee-hint" style="margin-bottom:12px;"></p>
+    <button type="button" id="export-csv-btn" class="directory-toggle" style="margin-bottom:16px;">⬇ CSVで書き出す（経理・Excel用）</button>
+    <div id="entries-list"></div>
+  </section>
+</div>
+
+<div id="lightbox" class="lightbox" hidden>
+  <img id="lightbox-img" src="">
+</div>
+<div id="confirm-modal" class="confirm-overlay" hidden>
+  <div class="confirm-box">
+    <p id="confirm-message"></p>
+    <div class="confirm-actions">
+      <button type="button" id="confirm-cancel" class="confirm-btn confirm-btn-secondary">キャンセル</button>
+      <button type="button" id="confirm-ok" class="confirm-btn confirm-btn-danger">削除する</button>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+  const form = document.getElementById('expense-form');
+  const employeeNoInput = document.getElementById('employeeNo');
+  const loginOverlay = document.getElementById('login-overlay');
+  const loginEmployeeSelect = document.getElementById('loginEmployeeSelect');
+  const loginBtn = document.getElementById('loginBtn');
+  const loggedInAsEl = document.getElementById('logged-in-as');
+  const directoryToggleBtn = document.getElementById('directory-toggle-btn');
+  const directoryPanel = document.getElementById('directory-panel');
+  const dirNoInput = document.getElementById('dirNo');
+  const dirNameInput = document.getElementById('dirName');
+  const dirSaveBtn = document.getElementById('dirSaveBtn');
+  const directoryListEl = document.getElementById('directory-list');
+  const siteDirectoryToggleBtn = document.getElementById('site-directory-toggle-btn');
+  const siteDirectoryPanel = document.getElementById('site-directory-panel');
+  const siteDirNameInput = document.getElementById('siteDirName');
+  const siteDirSaveBtn = document.getElementById('siteDirSaveBtn');
+  const siteDirectoryListEl = document.getElementById('site-directory-list');
+  const categoryDirectoryToggleBtn = document.getElementById('category-directory-toggle-btn');
+  const categoryDirectoryPanel = document.getElementById('category-directory-panel');
+  const catDirNameInput = document.getElementById('catDirName');
+  const catDirSaveBtn = document.getElementById('catDirSaveBtn');
+  const categoryDirectoryListEl = document.getElementById('category-directory-list');
+  const paymentMethodInput = document.getElementById('paymentMethod');
+  const expenseDateInput = document.getElementById('expenseDate');
+  const siteNameInput = document.getElementById('siteName');
+  const addSiteBtn = document.getElementById('add-site-btn');
+  const newSiteField = document.getElementById('new-site-field');
+  const newSiteNameInput = document.getElementById('newSiteName');
+  const newSiteCancelBtn = document.getElementById('new-site-cancel');
+  const newSiteConfirmBtn = document.getElementById('new-site-confirm');
+  const categoryInput = document.getElementById('category');
+  const categoryOtherField = document.getElementById('category-other-field');
+  const categoryOtherInput = document.getElementById('categoryOther');
+  const addCategoryBtn = document.getElementById('add-category-btn');
+  const newCategoryField = document.getElementById('new-category-field');
+  const newCategoryNameInput = document.getElementById('newCategoryName');
+  const newCategoryCancelBtn = document.getElementById('new-category-cancel');
+  const newCategoryConfirmBtn = document.getElementById('new-category-confirm');
+  const confirmModal = document.getElementById('confirm-modal');
+  const confirmMessage = document.getElementById('confirm-message');
+  const confirmCancelBtn = document.getElementById('confirm-cancel');
+  const confirmOkBtn = document.getElementById('confirm-ok');
+  const memoInput = document.getElementById('memo');
+  const amountInput = document.getElementById('amount');
+  const receiptInput = document.getElementById('receipt');
+  const receiptPreview = document.getElementById('receipt-preview');
+  const formError = document.getElementById('form-error');
+  const entriesList = document.getElementById('entries-list');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const toastEl = document.getElementById('toast');
+
+  const STORAGE_AVAILABLE = (() => {
+    try {
+      const testKey = '__storage_test__';
+      localStorage.setItem(testKey, '1');
+      localStorage.removeItem(testKey);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  })();
+
+  function loadJSON(key, fallback) {
+    if (!STORAGE_AVAILABLE) return fallback;
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  function saveJSON(key, value) {
+    if (!STORAGE_AVAILABLE) return;
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      // storage full or blocked; entry stays in memory for this session only
+    }
+  }
+
+  let pendingPhoto = null;
+  let entries = loadJSON('expense-entries', []);
+  let customCategories = loadJSON('expense-custom-categories', []);
+  let siteNames = loadJSON('expense-site-names', ['事務所', '山田倉庫', '現場']);
+  let employeeDirectory = loadJSON('expense-employee-directory', { '14': '久米絵利子' });
+  let currentEmployeeNo = loadJSON('expense-current-employee', null);
+  const RECIPIENT_EMAIL = 'kume.e@anima-chiba.co.jp';
+  const FIXED_CATEGORIES = ['電車代', '新幹線代', '宿泊ホテル代', '打ち合わせ会議食事', 'タクシー代', '事務用品', '消耗品', '現場消耗品', '接待食事'];
+  const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwK93Nhg3S5SyEh-3tqARh7I1aUR2ykAzuTDG0I172JqJHlGA8Nx0kC82iRGw31l4xZ/exec';
+
+  function renderDirectory() {
+    const nos = Object.keys(employeeDirectory).sort((a, b) => a.localeCompare(b, 'ja', { numeric: true }));
+    if (!nos.length) {
+      directoryListEl.innerHTML = '<p class="employee-hint">登録された社員がいません。</p>';
+    } else {
+      directoryListEl.innerHTML = '';
+      nos.forEach((no) => {
+        const row = document.createElement('div');
+        row.className = 'directory-item';
+        row.innerHTML =
+          '<span class="dno">' + escapeHtml(no) + '</span>' +
+          '<span class="dname">' + escapeHtml(employeeDirectory[no]) + '</span>';
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-link';
+        editBtn.textContent = '編集';
+        editBtn.addEventListener('click', () => {
+          dirNoInput.value = no;
+          dirNameInput.value = employeeDirectory[no];
+          dirNoInput.focus();
+        });
+        const delBtn = document.createElement('button');
+        delBtn.className = 'del-link';
+        delBtn.textContent = '削除';
+        delBtn.addEventListener('click', async () => {
+          const ok = await showConfirm('社員番号' + no + '（' + employeeDirectory[no] + '）を削除しますか？');
+          if (!ok) return;
+          delete employeeDirectory[no];
+          saveJSON('expense-employee-directory', employeeDirectory);
+          postToSheet({ type: 'employee_delete', employeeNo: no });
+          renderDirectory();
+        });
+        row.appendChild(editBtn);
+        row.appendChild(delBtn);
+        directoryListEl.appendChild(row);
+      });
+    }
+    renderEmployeeSelect();
+  }
+
+  function populateEmployeeSelect(selectEl, placeholderText) {
+    const previousValue = selectEl.value;
+    const nos = Object.keys(employeeDirectory).sort((a, b) => a.localeCompare(b, 'ja', { numeric: true }));
+    selectEl.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.disabled = true;
+    placeholder.textContent = nos.length ? placeholderText : '社員が登録されていません';
+    placeholder.selected = true;
+    selectEl.appendChild(placeholder);
+    nos.forEach((no) => {
+      const opt = document.createElement('option');
+      opt.value = no;
+      opt.textContent = no + '：' + employeeDirectory[no];
+      selectEl.appendChild(opt);
+    });
+    if (nos.includes(previousValue)) {
+      selectEl.value = previousValue;
+    }
+  }
+
+  function renderEmployeeSelect() {
+    populateEmployeeSelect(employeeNoInput, '選択してください');
+    populateEmployeeSelect(loginEmployeeSelect, '選択してください');
+  }
+
+  function showLoginOverlay() {
+    populateEmployeeSelect(loginEmployeeSelect, '選択してください');
+    loginOverlay.hidden = false;
+  }
+
+  function applyLogin(no) {
+    currentEmployeeNo = no;
+    saveJSON('expense-current-employee', no);
+    loginOverlay.hidden = true;
+    const name = employeeDirectory[no] || '';
+    loggedInAsEl.innerHTML = (name ? name + '（社員番号' + no + '）' : '社員番号' + no) +
+      ' としてログイン中　<button type="button" id="switch-user-btn" class="edit-link" style="font-size:12.5px;">切替</button>';
+    document.getElementById('switch-user-btn').addEventListener('click', () => {
+      showLoginOverlay();
+    });
+    if (employeeNoInput) {
+      employeeNoInput.value = no;
+      employeeNoInput.disabled = true;
+    }
+    loadEntries();
+  }
+
+  loginBtn.addEventListener('click', () => {
+    const no = loginEmployeeSelect.value;
+    if (!no) {
+      showToast('社員番号を選択してください');
+      return;
+    }
+    applyLogin(no);
+  });
+
+  directoryToggleBtn.addEventListener('click', () => {
+    const willShow = directoryPanel.hidden;
+    directoryPanel.hidden = !willShow;
+    directoryToggleBtn.textContent = (willShow ? '▾' : '▸') + ' 社員番号・氏名の登録／編集';
+  });
+
+  dirSaveBtn.addEventListener('click', () => {
+    const no = dirNoInput.value.trim();
+    const name = dirNameInput.value.trim();
+    if (!no || !name) {
+      showToast('番号と氏名の両方を入力してください');
+      return;
+    }
+    employeeDirectory[no] = name;
+    saveJSON('expense-employee-directory', employeeDirectory);
+    postToSheet({ type: 'employee_upsert', employeeNo: no, employeeName: name });
+    dirNoInput.value = '';
+    dirNameInput.value = '';
+    renderDirectory();
+    showToast('社員情報を保存しました');
+  });
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    setTimeout(() => toastEl.classList.remove('show'), 1800);
+  }
+
+  function showError(msg) {
+    formError.textContent = msg;
+    formError.hidden = false;
+  }
+  function clearError() {
+    formError.hidden = true;
+    formError.textContent = '';
+  }
+
+  function loadCustomCategories() {
+    return customCategories;
+  }
+
+  function saveCustomCategories(list) {
+    customCategories = list;
+    saveJSON('expense-custom-categories', list);
+  }
+
+  function insertCategoryOption(name) {
+    const exists = Array.from(categoryInput.options).some((o) => o.value === name);
+    if (exists) return;
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    opt.dataset.custom = '1';
+    const otherOpt = Array.from(categoryInput.options).find((o) => o.value === 'その他');
+    categoryInput.insertBefore(opt, otherOpt);
+  }
+
+  addCategoryBtn.addEventListener('click', () => {
+    newCategoryField.hidden = false;
+    addCategoryBtn.hidden = true;
+    newCategoryNameInput.focus();
+  });
+
+  newCategoryCancelBtn.addEventListener('click', () => {
+    newCategoryField.hidden = true;
+    addCategoryBtn.hidden = false;
+    newCategoryNameInput.value = '';
+  });
+
+  newCategoryConfirmBtn.addEventListener('click', () => {
+    const trimmed = newCategoryNameInput.value.trim();
+    if (!trimmed) {
+      newCategoryNameInput.focus();
+      return;
+    }
+    const existing = Array.from(categoryInput.options).map((o) => o.value);
+    if (!existing.includes(trimmed)) {
+      const list = loadCustomCategories();
+      list.push(trimmed);
+      saveCustomCategories(list);
+      insertCategoryOption(trimmed);
+    }
+    categoryInput.value = trimmed;
+    categoryInput.dispatchEvent(new Event('change'));
+    newCategoryField.hidden = true;
+    addCategoryBtn.hidden = false;
+    newCategoryNameInput.value = '';
+    showToast('項目を追加しました');
+  });
+
+  let editingSiteIndex = null;
+  let editingCategoryIndex = null;
+
+  function renderSiteOptions() {
+    const previousValue = siteNameInput.value;
+    siteNameInput.innerHTML = '';
+    const blank = document.createElement('option');
+    blank.value = '';
+    blank.textContent = '－ 指定なし －';
+    siteNameInput.appendChild(blank);
+    siteNames.forEach((name) => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      siteNameInput.appendChild(opt);
+    });
+    if (siteNames.includes(previousValue)) {
+      siteNameInput.value = previousValue;
+    }
+  }
+
+  function renderSiteDirectoryList() {
+    if (!siteNames.length) {
+      siteDirectoryListEl.innerHTML = '<p class="employee-hint">登録された現場がありません。</p>';
+      return;
+    }
+    siteDirectoryListEl.innerHTML = '';
+    siteNames.forEach((name, index) => {
+      const row = document.createElement('div');
+      row.className = 'directory-item';
+      row.innerHTML = '<span class="dname">' + escapeHtml(name) + '</span>';
+      const editBtn = document.createElement('button');
+      editBtn.className = 'edit-link';
+      editBtn.textContent = '編集';
+      editBtn.addEventListener('click', () => {
+        siteDirNameInput.value = name;
+        editingSiteIndex = index;
+        siteDirNameInput.focus();
+      });
+      const delBtn = document.createElement('button');
+      delBtn.className = 'del-link';
+      delBtn.textContent = '削除';
+      delBtn.addEventListener('click', async () => {
+        const ok = await showConfirm('現場「' + name + '」を削除しますか？');
+        if (!ok) return;
+        siteNames.splice(index, 1);
+        saveJSON('expense-site-names', siteNames);
+        postToSheet({ type: 'site_delete', siteName: name });
+        if (editingSiteIndex === index) {
+          editingSiteIndex = null;
+          siteDirNameInput.value = '';
+        }
+        renderSiteDirectoryList();
+        renderSiteOptions();
+      });
+      row.appendChild(editBtn);
+      row.appendChild(delBtn);
+      siteDirectoryListEl.appendChild(row);
+    });
+  }
+
+  siteDirectoryToggleBtn.addEventListener('click', () => {
+    const willShow = siteDirectoryPanel.hidden;
+    siteDirectoryPanel.hidden = !willShow;
+    siteDirectoryToggleBtn.textContent = (willShow ? '▾' : '▸') + ' 現場名の登録／編集';
+  });
+
+  siteDirSaveBtn.addEventListener('click', () => {
+    const trimmed = siteDirNameInput.value.trim();
+    if (!trimmed) {
+      siteDirNameInput.focus();
+      return;
+    }
+    if (editingSiteIndex !== null) {
+      const oldName = siteNames[editingSiteIndex];
+      siteNames[editingSiteIndex] = trimmed;
+      editingSiteIndex = null;
+      postToSheet({ type: 'site_upsert', siteName: trimmed, oldSiteName: oldName });
+    } else if (!siteNames.includes(trimmed)) {
+      siteNames.push(trimmed);
+      postToSheet({ type: 'site_upsert', siteName: trimmed });
+    }
+    saveJSON('expense-site-names', siteNames);
+    siteDirNameInput.value = '';
+    renderSiteDirectoryList();
+    renderSiteOptions();
+    showToast('現場情報を保存しました');
+  });
+
+  addSiteBtn.addEventListener('click', () => {
+    newSiteField.hidden = false;
+    addSiteBtn.hidden = true;
+    newSiteNameInput.focus();
+  });
+
+  newSiteCancelBtn.addEventListener('click', () => {
+    newSiteField.hidden = true;
+    addSiteBtn.hidden = false;
+    newSiteNameInput.value = '';
+  });
+
+  newSiteConfirmBtn.addEventListener('click', () => {
+    const trimmed = newSiteNameInput.value.trim();
+    if (!trimmed) {
+      newSiteNameInput.focus();
+      return;
+    }
+    if (!siteNames.includes(trimmed)) {
+      siteNames.push(trimmed);
+      saveJSON('expense-site-names', siteNames);
+      postToSheet({ type: 'site_upsert', siteName: trimmed });
+      renderSiteOptions();
+    }
+    siteNameInput.value = trimmed;
+    newSiteField.hidden = true;
+    addSiteBtn.hidden = false;
+    newSiteNameInput.value = '';
+    showToast('現場を追加しました');
+  });
+
+  function renderCategoryDirectoryList() {
+    if (!customCategories.length) {
+      categoryDirectoryListEl.innerHTML = '<p class="employee-hint">追加された項目がありません。</p>';
+      return;
+    }
+    categoryDirectoryListEl.innerHTML = '';
+    customCategories.forEach((name, index) => {
+      const row = document.createElement('div');
+      row.className = 'directory-item';
+      row.innerHTML = '<span class="dname">' + escapeHtml(name) + '</span>';
+      const editBtn = document.createElement('button');
+      editBtn.className = 'edit-link';
+      editBtn.textContent = '編集';
+      editBtn.addEventListener('click', () => {
+        catDirNameInput.value = name;
+        editingCategoryIndex = index;
+        catDirNameInput.focus();
+      });
+      const delBtn = document.createElement('button');
+      delBtn.className = 'del-link';
+      delBtn.textContent = '削除';
+      delBtn.addEventListener('click', async () => {
+        const ok = await showConfirm('項目「' + name + '」を削除しますか？');
+        if (!ok) return;
+        customCategories.splice(index, 1);
+        saveJSON('expense-custom-categories', customCategories);
+        postToSheet({ type: 'category_delete', category: name });
+        if (editingCategoryIndex === index) {
+          editingCategoryIndex = null;
+          catDirNameInput.value = '';
+        }
+        Array.from(categoryInput.querySelectorAll('option[data-custom]')).forEach((o) => o.remove());
+        customCategories.forEach((n) => insertCategoryOption(n));
+        renderCategoryDirectoryList();
+      });
+      row.appendChild(editBtn);
+      row.appendChild(delBtn);
+      categoryDirectoryListEl.appendChild(row);
+    });
+  }
+
+  categoryDirectoryToggleBtn.addEventListener('click', () => {
+    const willShow = categoryDirectoryPanel.hidden;
+    categoryDirectoryPanel.hidden = !willShow;
+    categoryDirectoryToggleBtn.textContent = (willShow ? '▾' : '▸') + ' 項目の登録／編集';
+  });
+
+  catDirSaveBtn.addEventListener('click', () => {
+    const trimmed = catDirNameInput.value.trim();
+    if (!trimmed) {
+      catDirNameInput.focus();
+      return;
+    }
+    if (FIXED_CATEGORIES.includes(trimmed)) {
+      showToast('「' + trimmed + '」は元からある項目です');
+      catDirNameInput.value = '';
+      return;
+    }
+    if (editingCategoryIndex !== null) {
+      const oldName = customCategories[editingCategoryIndex];
+      customCategories[editingCategoryIndex] = trimmed;
+      editingCategoryIndex = null;
+      postToSheet({ type: 'category_upsert', category: trimmed, oldCategory: oldName });
+    } else if (!customCategories.includes(trimmed)) {
+      customCategories.push(trimmed);
+      postToSheet({ type: 'category_upsert', category: trimmed });
+    }
+    saveJSON('expense-custom-categories', customCategories);
+    catDirNameInput.value = '';
+    Array.from(categoryInput.querySelectorAll('option[data-custom]')).forEach((o) => o.remove());
+    customCategories.forEach((n) => insertCategoryOption(n));
+    renderCategoryDirectoryList();
+    showToast('項目情報を保存しました');
+  });
+
+
+  function showConfirm(message) {
+    confirmMessage.textContent = message;
+    confirmModal.hidden = false;
+    return new Promise((resolve) => {
+      function cleanup(result) {
+        confirmModal.hidden = true;
+        confirmOkBtn.removeEventListener('click', onOk);
+        confirmCancelBtn.removeEventListener('click', onCancel);
+        resolve(result);
+      }
+      function onOk() { cleanup(true); }
+      function onCancel() { cleanup(false); }
+      confirmOkBtn.addEventListener('click', onOk);
+      confirmCancelBtn.addEventListener('click', onCancel);
+    });
+  }
+
+  categoryInput.addEventListener('change', () => {
+    if (categoryInput.value === 'その他') {
+      categoryOtherField.hidden = false;
+      categoryOtherInput.required = true;
+    } else {
+      categoryOtherField.hidden = true;
+      categoryOtherInput.required = false;
+      categoryOtherInput.value = '';
+    }
+  });
+
+  function compressImage(file) {
+    const TARGET_BYTES = 900000; // aim well under the 5MB per-key storage limit
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const widths = [1000, 800, 600, 450];
+          const qualities = [0.7, 0.55, 0.4, 0.3];
+          let result = null;
+          for (const w of widths) {
+            const scale = Math.min(1, w / img.width);
+            const cw = Math.round(img.width * scale);
+            const ch = Math.round(img.height * scale);
+            const canvas = document.createElement('canvas');
+            canvas.width = cw;
+            canvas.height = ch;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, cw, ch);
+            for (const q of qualities) {
+              const dataUrl = canvas.toDataURL('image/jpeg', q);
+              const approxBytes = dataUrl.length * 0.75;
+              if (approxBytes <= TARGET_BYTES) {
+                result = dataUrl;
+                break;
+              }
+              result = dataUrl; // keep smallest attempt so far as fallback
+            }
+            if (result && result.length * 0.75 <= TARGET_BYTES) break;
+          }
+          if (!result) {
+            reject(new Error('圧縮に失敗しました'));
+            return;
+          }
+          resolve(result);
+        };
+        img.onerror = () => reject(new Error('画像の読み込みに失敗しました'));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error('ファイルの読み込みに失敗しました'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  receiptInput.addEventListener('change', async () => {
+    const file = receiptInput.files[0];
+    if (!file) return;
+    receiptPreview.textContent = '処理中…';
+    try {
+      pendingPhoto = await compressImage(file);
+      receiptPreview.classList.add('has-image');
+      receiptPreview.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = pendingPhoto;
+      receiptPreview.appendChild(img);
+    } catch (err) {
+      pendingPhoto = null;
+      receiptPreview.classList.remove('has-image');
+      receiptPreview.textContent = 'タップして撮影・選択';
+      showError('写真の処理に失敗しました。もう一度お試しください。');
+    }
+  });
+
+  function formatYen(n) {
+    return '¥' + Number(n).toLocaleString('ja-JP');
+  }
+  function formatDate(iso) {
+    const d = new Date(iso);
+    return d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function loadEntries() {
+    const visibleEntries = currentEmployeeNo
+      ? entries.filter((e) => e.employeeNo === currentEmployeeNo)
+      : entries;
+    renderEntries(visibleEntries);
+  }
+
+  function renderEntries(entries) {
+    if (!entries.length) {
+      entriesList.innerHTML = '<div class="empty-state">まだ申請がありません。上のフォームから最初の経費を登録してください。</div>';
+      return;
+    }
+    entriesList.innerHTML = '';
+    entries.forEach((entry) => {
+      const row = document.createElement('div');
+      row.className = 'ledger-row';
+
+      const thumb = document.createElement('div');
+      thumb.className = 'thumb';
+      const img = document.createElement('img');
+      img.src = entry.photoData;
+      thumb.appendChild(img);
+      thumb.addEventListener('click', () => {
+        lightboxImg.src = entry.photoData;
+        lightbox.hidden = false;
+      });
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      const empLabel = '社員番号 ' + escapeHtml(entry.employeeNo) + (entry.employeeName ? '（' + escapeHtml(entry.employeeName) + '）' : '');
+      const siteLine = entry.siteName
+        ? ('現場 ' + escapeHtml(entry.siteName))
+        : '';
+      const subLine = entry.memo
+        ? (empLabel + (siteLine ? ' ・ ' + siteLine : '') + ' ・ ' + escapeHtml(entry.memo))
+        : (empLabel + (siteLine ? ' ・ ' + siteLine : '') + ' ・ ' + (entry.expenseDate || formatDate(entry.timestamp)));
+      meta.innerHTML =
+        '<p class="category">' + escapeHtml(entry.category) + (entry.paymentMethod ? ' ・ ' + escapeHtml(entry.paymentMethod) : '') + '</p>' +
+        '<p class="sub">' + subLine + '</p>';
+
+      const amountCol = document.createElement('div');
+      amountCol.className = 'amount-col';
+      const amountEl = document.createElement('div');
+      amountEl.className = 'amount';
+      amountEl.textContent = formatYen(entry.amount);
+      const delBtn = document.createElement('button');
+      delBtn.className = 'del-btn';
+      delBtn.textContent = '削除';
+      delBtn.addEventListener('click', () => deleteEntry(entry.id));
+      const shareBtn = document.createElement('button');
+      shareBtn.className = 'del-btn';
+      shareBtn.style.color = 'var(--accent)';
+      shareBtn.textContent = '写真を共有';
+      shareBtn.addEventListener('click', async () => {
+        const viaClipboard = await copyPhotoThenOpenMail(entry);
+        if (!viaClipboard) {
+          const ok = await shareEntryWithPhoto(entry);
+          if (!ok) {
+            showToast('この端末では共有に対応していません。写真を長押しして保存してください。');
+          }
+        }
+      });
+      amountCol.appendChild(amountEl);
+      amountCol.appendChild(shareBtn);
+      amountCol.appendChild(delBtn);
+
+      row.appendChild(thumb);
+      row.appendChild(meta);
+      row.appendChild(amountCol);
+      entriesList.appendChild(row);
+    });
+  }
+
+  function postToSheet(payload) {
+    if (!SHEET_WEBHOOK_URL) return;
+    try {
+      fetch(SHEET_WEBHOOK_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      }).catch(() => { /* network error; local copy is unaffected */ });
+    } catch (e) { /* ignore */ }
+  }
+
+  function sendToSheet(entry) {
+    postToSheet({
+      type: 'expense',
+      employeeNo: entry.employeeNo,
+      employeeName: entry.employeeName || '',
+      expenseDate: entry.expenseDate || '',
+      siteName: entry.siteName || '',
+      paymentMethod: entry.paymentMethod || '',
+      category: entry.category,
+      memo: entry.memo || '',
+      amount: entry.amount
+    });
+  }
+
+  async function fetchSharedDirectories() {
+    if (!SHEET_WEBHOOK_URL) return false;
+    try {
+      const res = await fetch(SHEET_WEBHOOK_URL, { method: 'GET' });
+      const data = await res.json();
+      if (data.employees && typeof data.employees === 'object') {
+        employeeDirectory = data.employees;
+        saveJSON('expense-employee-directory', employeeDirectory);
+      }
+      if (Array.isArray(data.sites)) {
+        siteNames = data.sites;
+        saveJSON('expense-site-names', siteNames);
+      }
+      if (Array.isArray(data.categories)) {
+        customCategories = data.categories.filter((name) => !FIXED_CATEGORIES.includes(name));
+        saveJSON('expense-custom-categories', customCategories);
+      }
+      renderDirectory();
+      renderSiteOptions();
+      renderSiteDirectoryList();
+      Array.from(categoryInput.querySelectorAll('option[data-custom]')).forEach((o) => o.remove());
+      customCategories.forEach((name) => insertCategoryOption(name));
+      renderCategoryDirectoryList();
+      if (currentEmployeeNo && employeeDirectory[currentEmployeeNo]) {
+        applyLogin(currentEmployeeNo);
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  document.getElementById('refresh-directories-btn').addEventListener('click', async () => {
+    showToast('更新しています…');
+    const ok = await fetchSharedDirectories();
+    showToast(ok ? '最新の情報に更新しました' : '更新に失敗しました（オフラインの可能性があります）');
+  });
+
+  function buildMailContent(entry) {
+    const dateStr = formatDate(entry.timestamp);
+    const subject = '経費申請：' + entry.category + '（社員番号' + entry.employeeNo + '）';
+    const bodyLines = [
+      '経理担当 様',
+      '',
+      '下記のとおり経費を申請します。',
+      '',
+      '社員番号：' + entry.employeeNo + (entry.employeeName ? '（' + entry.employeeName + '）' : ''),
+      '利用日　：' + (entry.expenseDate || dateStr),
+      '現場名　：' + (entry.siteName || '－'),
+      '支払方法：' + (entry.paymentMethod || '－'),
+      '項目　　：' + entry.category,
+      '摘要　　：' + (entry.memo || '－'),
+      '金額　　：' + formatYen(entry.amount),
+      '申請日　：' + dateStr
+    ];
+    return { subject, body: bodyLines.join('\n') };
+  }
+
+  function openMailDraft(entry) {
+    const { subject, body } = buildMailContent(entry);
+    const fullBody = body + '\n\n※領収書の写真は本メールに添付、または共有機能から別途お送りください。';
+    const mailto = 'mailto:' + RECIPIENT_EMAIL +
+      '?subject=' + encodeURIComponent(subject) +
+      '&body=' + encodeURIComponent(fullBody);
+    window.location.href = mailto;
+  }
+
+  function dataURLtoBlob(dataUrl) {
+    const parts = dataUrl.split(',');
+    const mimeMatch = parts[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+    const binary = atob(parts[1]);
+    const array = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      array[i] = binary.charCodeAt(i);
+    }
+    return new Blob([array], { type: mime });
+  }
+
+  function dataURLtoPngBlob(dataUrl) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png');
+      };
+      img.onerror = () => reject(new Error('image load failed'));
+      img.src = dataUrl;
+    });
+  }
+
+  async function shareEntryWithPhoto(entry) {
+    const { subject, body } = buildMailContent(entry);
+    try {
+      const blob = dataURLtoBlob(entry.photoData);
+      const file = new File([blob], 'receipt-' + entry.id + '.jpg', { type: 'image/jpeg' });
+      const shareData = { files: [file], title: subject, text: body };
+      if (navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+        return true;
+      }
+    } catch (e) {
+      if (e && e.name === 'AbortError') return true;
+    }
+    return false;
+  }
+
+  async function copyPhotoThenOpenMail(entry) {
+    let copied = false;
+    try {
+      if (navigator.clipboard && window.ClipboardItem) {
+        const pngBlob = await dataURLtoPngBlob(entry.photoData);
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob })]);
+        copied = true;
+      }
+    } catch (e) { /* clipboard copy failed; still open the mail draft below */ }
+
+    if (copied) {
+      showToast('写真をコピーしました。メール本文に貼り付けてください。');
+    } else {
+      showToast('写真の自動コピーに対応していません。手動で添付してください。');
+    }
+    openMailDraft(entry);
+    return true;
+  }
+
+  function csvField(value) {
+    const str = String(value == null ? '' : value);
+    if (/[",\n]/.test(str)) {
+      return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+  }
+
+  async function exportCSV() {
+    const exportEntries = currentEmployeeNo
+      ? entries.filter((e) => e.employeeNo === currentEmployeeNo)
+      : entries;
+    if (!exportEntries.length) {
+      showToast('申請履歴がありません');
+      return;
+    }
+    const headers = ['申請日時', '社員番号', '氏名', '利用日', '現場名', '支払方法', '項目', '摘要', '金額'];
+    const rows = exportEntries.map((e) => [
+      e.timestamp ? new Date(e.timestamp).toLocaleString('ja-JP') : '',
+      e.employeeNo || '',
+      e.employeeName || '',
+      e.expenseDate || '',
+      e.siteName || '',
+      e.paymentMethod || '',
+      e.category || '',
+      e.memo || '',
+      e.amount != null ? e.amount : ''
+    ]);
+    const csvLines = [headers, ...rows].map((row) => row.map(csvField).join(','));
+    const csvContent = '\uFEFF' + csvLines.join('\r\n');
+    const fileName = '経費一覧_' + new Date().toISOString().slice(0, 10) + '.csv';
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+    try {
+      const file = new File([blob], fileName, { type: 'text/csv' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: fileName });
+        return;
+      }
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+
+  document.getElementById('export-csv-btn').addEventListener('click', exportCSV);
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  async function deleteEntry(id) {
+    const ok = await showConfirm('この申請を削除しますか？');
+    if (!ok) return;
+    entries = entries.filter((x) => x.id !== id);
+    saveJSON('expense-entries', entries);
+    showToast('削除しました');
+    loadEntries();
+  }
+
+  lightbox.addEventListener('click', () => { lightbox.hidden = true; });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError();
+
+    const employeeNo = employeeNoInput.value.trim();
+    const expenseDate = expenseDateInput.value;
+    const paymentMethod = paymentMethodInput.value;
+    const siteName = siteNameInput.value.trim();
+    let category = categoryInput.value;
+    const memo = memoInput.value.trim();
+    const amount = amountInput.value;
+
+    if (category === 'その他') {
+      const otherText = categoryOtherInput.value.trim();
+      if (!otherText) {
+        showError('「その他」の内容を入力してください。');
+        return;
+      }
+      category = otherText;
+    }
+
+    if (!employeeNo || !expenseDate || !paymentMethod || !category || !amount) {
+      showError('社員番号・項目・金額を入力してください。');
+      return;
+    }
+    if (!pendingPhoto) {
+      showError('領収書の写真を選択してください。');
+      return;
+    }
+
+    const submitBtn = form.querySelector('.submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '登録中…';
+
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    const entry = {
+      id,
+      employeeNo,
+      employeeName: employeeDirectory[employeeNo] || '',
+      expenseDate,
+      paymentMethod,
+      siteName,
+      category,
+      memo,
+      amount: Number(amount),
+      photoData: pendingPhoto,
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      entries.unshift(entry);
+      saveJSON('expense-entries', entries);
+      sendToSheet(entry);
+      form.reset();
+      categoryOtherField.hidden = true;
+      categoryOtherInput.required = false;
+      pendingPhoto = null;
+      receiptPreview.classList.remove('has-image');
+      receiptPreview.textContent = 'タップして撮影・選択';
+      showToast('登録しました。メールアプリを開きます…');
+      loadEntries();
+      setTimeout(() => openMailDraft(entry), 600);
+    } catch (err) {
+      showError('保存に失敗しました。もう一度お試しください。（' + (err && err.message ? err.message : '不明なエラー') + '）');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '登録する';
+    }
+  });
+
+  function init() {
+    const storageStatusEl = document.getElementById('storage-status');
+    if (storageStatusEl) {
+      storageStatusEl.textContent = STORAGE_AVAILABLE
+        ? 'この端末には申請履歴が保存されます。'
+        : '※この環境では保存機能が使えないため、閉じると履歴は消えます。';
+    }
+    if (expenseDateInput) {
+      expenseDateInput.value = new Date().toISOString().slice(0, 10);
+    }
+    loadCustomCategories().forEach((name) => insertCategoryOption(name));
+    renderSiteOptions();
+    renderSiteDirectoryList();
+    renderCategoryDirectoryList();
+    renderDirectory();
+    if (currentEmployeeNo && employeeDirectory[currentEmployeeNo]) {
+      applyLogin(currentEmployeeNo);
+    } else {
+      showLoginOverlay();
+    }
+    loadEntries();
+    fetchSharedDirectories();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
