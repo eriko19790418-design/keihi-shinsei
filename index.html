@@ -908,16 +908,17 @@
     try {
       // Content-Type ヘッダーを明示しないことで、ブラウザごとのCORS/URL解釈差を避けます。
       // Apps Script 側では e.postData.contents から同じJSONを受け取れます。
-      const requestUrl = SHEET_WEBHOOK_URL + (SHEET_WEBHOOK_URL.includes('?') ? '&' : '?') + '_ts=' + Date.now();
-      const res = await fetch(requestUrl, {
-        method: 'POST',
-        mode: 'cors',
-        credentials: 'omit',
-        redirect: 'follow',
-        cache: 'no-store',
-        body: JSON.stringify({ type: 'ocr', photoData: photoDataUrl }),
-        signal: controller.signal
-      });
+      const res = await fetch(SHEET_WEBHOOK_URL, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'text/plain;charset=utf-8'
+  },
+  body: JSON.stringify({
+    type: 'ocr',
+    photoData: photoDataUrl
+  }),
+  signal: controller.signal
+});
       const rawText = await res.text();
       if (!res.ok) {
         throw new Error('HTTP ' + res.status + (rawText ? '：' + rawText.slice(0, 120) : ''));
