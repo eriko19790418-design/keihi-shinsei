@@ -488,8 +488,9 @@
         </div>
       </div>
       <div id="ocr-review" class="ocr-review" hidden>
-        <p class="ocr-review-title">レシート読取結果（手入力で修正できます）</p>
-        <p class="ocr-review-note">読み取り内容を確認し、間違いがあれば直接入力し直してから登録してください。</p>
+        <p class="ocr-review-title">レシート自動読取結果</p>
+        <p class="ocr-review-note">日付・店名/内容・税率・金額はレシートから自動入力します。間違いがある場合だけ修正してください。</p>
+        <p id="ocr-status" class="employee-hint" style="margin:0 0 10px; font-weight:700;">レシートを選ぶと自動読取を開始します。</p>
         <div class="ocr-grid">
           <div class="field ocr-full">
             <label for="storeName">店名・内容</label>
@@ -514,11 +515,12 @@
             <input type="number" id="tax10Amount" min="0" step="1" inputmode="numeric" placeholder="0">
           </div>
           <div class="field ocr-full">
-            <p class="employee-hint" style="margin:0;">利用日・摘要・金額も上の入力欄を直接修正できます。</p>
+            <button type="button" id="ocr-retry-btn" class="mini-btn mini-btn-secondary" style="width:100%;">🔄 レシートをもう一度読み取る</button>
+            <p class="employee-hint" style="margin:8px 0 0;">自動入力された内容に誤りがある場合だけ、各欄を直接修正してください。</p>
           </div>
         </div>
       </div>
-      <button type="submit" class="submit-btn">登録する</button>
+      <button type="submit" class="submit-btn">この内容で登録する</button>
       <p id="form-error" class="form-error" hidden></p>
     </form>
   </section>
@@ -529,7 +531,7 @@
     <p id="storage-status" class="employee-hint" style="margin-bottom:12px;"></p>
     <button type="button" id="export-csv-btn" class="directory-toggle" style="margin-bottom:16px;">⬇ CSVで書き出す（経理・Excel用）</button>
     <div id="entries-list"></div>
-    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-16-G（OCR手修正版）</p>
+    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-16-H（OCR自動入力優先版）</p>
   </section>
 </div>
 
@@ -572,6 +574,8 @@
   const taxRateInput = document.getElementById('taxRate');
   const tax8AmountInput = document.getElementById('tax8Amount');
   const tax10AmountInput = document.getElementById('tax10Amount');
+  const ocrStatusEl = document.getElementById('ocr-status');
+  const ocrRetryBtn = document.getElementById('ocr-retry-btn');
   const formError = document.getElementById('form-error');
   const entriesList = document.getElementById('entries-list');
   const lightbox = document.getElementById('lightbox');
@@ -612,6 +616,8 @@
   let lastOcrStoreName = '';
   let lastOcrTax8 = 0;
   let lastOcrTax10 = 0;
+  let ocrReady = false;
+  let ocrInProgress = false;
   let entries = loadJSON('expense-entries', []);
   let siteNames = loadJSON('expense-site-names', ['事務所', '山田倉庫', '現場']);
   let employeeDirectory = loadJSON('expense-employee-directory', { '14': { name: '久米絵利子', phone4: '' } });
@@ -825,33 +831,67 @@
       tax8AmountInput.value = '';
       tax10AmountInput.value = '';
       ocrReview.hidden = false;
+      ocrReady = false;
+      if (ocrStatusEl) ocrStatusEl.textContent = '自動読取中です…';
       runReceiptOCR(pendingPhoto);
     } catch (err) {
       pendingPhoto = null;
       receiptPreview.classList.remove('has-image');
       receiptPreview.textContent = 'タップして撮影・選択';
       ocrReview.hidden = true;
-      showError('写真の処理に失敗しました。もう一度お試しください。');
+      ocrReady = false;
+      showError('写真の処理に失敗しました。もう一度撮影・選択してください。');
     }
   });
 
   async function runReceiptOCR(photoDataUrl) {
-    if (!SHEET_WEBHOOK_URL) return;
+    if (!SHEET_WEBHOOK_URL || !photoDataUrl || ocrInProgress) return;
+    clearError();
+    ocrInProgress = true;
+    ocrReady = false;
+    const submitBtn = form.querySelector('.submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'レシート読取中…';
+    if (ocrStatusEl) ocrStatusEl.textContent = 'レシートから日付・内容・税率・金額を読み取っています…';
     showToast('レシートを解析しています…');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
     try {
-      const res = await fetch(SHEET_WEBHOOK_URL, {
+      // Content-Type ヘッダーを明示しないことで、ブラウザごとのCORS/URL解釈差を避けます。
+      // Apps Script 側では e.postData.contents から同じJSONを受け取れます。
+      const requestUrl = SHEET_WEBHOOK_URL + (SHEET_WEBHOOK_URL.includes('?') ? '&' : '?') + '_ts=' + Date.now();
+      const res = await fetch(requestUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ type: 'ocr', photoData: photoDataUrl })
+        mode: 'cors',
+        credentials: 'omit',
+        redirect: 'follow',
+        cache: 'no-store',
+        body: JSON.stringify({ type: 'ocr', photoData: photoDataUrl }),
+        signal: controller.signal
       });
-      const result = await res.json();
+      const rawText = await res.text();
+      if (!res.ok) {
+        throw new Error('HTTP ' + res.status + (rawText ? '：' + rawText.slice(0, 120) : ''));
+      }
+      let result;
+      try {
+        result = JSON.parse(rawText);
+      } catch (parseErr) {
+        throw new Error('OCRサーバーの応答形式を確認できませんでした' + (rawText ? '：' + rawText.slice(0, 120) : ''));
+      }
       if (result.error) {
         showError('読み取り失敗：' + String(result.error).slice(0, 200));
         return;
       }
       let filledAny = false;
-      if (result.storeName) {
-        lastOcrStoreName = String(result.storeName).trim();
+      const storeName = result.storeName ? String(result.storeName).trim() : '';
+      let description = '';
+      if (result.description) description = String(result.description).trim();
+      else if (result.content) description = String(result.content).trim();
+      else if (result.memo) description = String(result.memo).trim();
+      else if (Array.isArray(result.items)) description = result.items.map(x => typeof x === 'string' ? x : (x && (x.name || x.item || x.description)) || '').filter(Boolean).slice(0, 8).join('、');
+      lastOcrStoreName = [storeName, description].filter(Boolean).join(' / ');
+      if (lastOcrStoreName) {
         storeNameInput.value = lastOcrStoreName;
         filledAny = true;
       }
@@ -872,20 +912,33 @@
       if (tax8 > 0 && tax10 > 0) taxRateInput.value = 'mixed';
       else if (tax8 > 0) taxRateInput.value = '8';
       else if (tax10 > 0) taxRateInput.value = '10';
-      if ((tax8 > 0 || tax10 > 0) && !memoInput.value.trim()) {
-        const parts = [];
-        if (tax8 > 0) parts.push('8%対象:' + formatYen(tax8));
-        if (tax10 > 0) parts.push('10%対象:' + formatYen(tax10));
-        if (result.storeName) parts.unshift(result.storeName);
-        memoInput.value = parts.join(' ');
-        filledAny = true;
-      } else if (result.storeName && !memoInput.value.trim()) {
-        memoInput.value = result.storeName;
-        filledAny = true;
+      if (!memoInput.value.trim()) {
+        const memoParts = [];
+        if (description) memoParts.push(description);
+        else if (storeName) memoParts.push(storeName);
+        if (tax8 > 0) memoParts.push('8%対象:' + formatYen(tax8));
+        if (tax10 > 0) memoParts.push('10%対象:' + formatYen(tax10));
+        if (memoParts.length) { memoInput.value = memoParts.join(' '); filledAny = true; }
       }
-      showToast(filledAny ? 'レシート内容を自動入力しました。内容をご確認ください。' : '自動読み取りできる内容がありませんでした。');
+      const essentialOk = !!expenseDateInput.value && !!amountInput.value && !!storeNameInput.value.trim();
+      ocrReady = essentialOk;
+      if (ocrStatusEl) ocrStatusEl.textContent = essentialOk
+        ? '✅ 自動読取完了。内容を確認し、間違いがある場合だけ修正してください。'
+        : '⚠️ 一部を読み取れませんでした。撮り直すか、読み取れなかった欄だけ修正してください。';
+      showToast(filledAny ? 'レシート内容を自動入力しました' : '自動読み取りできる内容がありませんでした');
     } catch (e) {
-      showError('通信エラー：' + String(e && e.message ? e.message : e).slice(0, 200));
+      const msg = e && e.name === 'AbortError'
+        ? '通信が30秒以内に完了しませんでした。電波状況を確認して再度お試しください。'
+        : String(e && e.message ? e.message : e).slice(0, 220);
+      ocrReady = false;
+      if (ocrStatusEl) ocrStatusEl.textContent = '❌ 自動読取に失敗しました。写真を撮り直すか「もう一度読み取る」を押してください。';
+      showError('レシートの自動読取に失敗しました。まず再読取をお試しください。\n詳細：' + msg);
+    } finally {
+      clearTimeout(timeoutId);
+      ocrInProgress = false;
+      const submitBtn = form.querySelector('.submit-btn');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'この内容で登録する';
     }
   }
 
@@ -916,6 +969,13 @@
     lastOcrTax8 = Number(tax8AmountInput.value) || 0;
     lastOcrTax10 = Number(tax10AmountInput.value) || 0;
   });
+
+  if (ocrRetryBtn) {
+    ocrRetryBtn.addEventListener('click', () => {
+      if (!pendingPhoto) { showError('先にレシートの写真を撮影・選択してください。'); return; }
+      runReceiptOCR(pendingPhoto);
+    });
+  }
 
   function formatYen(n) {
     return '¥' + Number(n).toLocaleString('ja-JP');
@@ -1288,7 +1348,7 @@
       showError('保存に失敗しました。もう一度お試しください。（' + (err && err.message ? err.message : '不明なエラー') + '）');
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = '登録する';
+      submitBtn.textContent = 'この内容で登録する';
     }
   });
 
