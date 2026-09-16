@@ -384,6 +384,38 @@
 .directory-item .edit-link { color: var(--accent); }
 .directory-item .del-link { color: var(--danger); }
 
+/* レシートOCR確認・修正欄 */
+.ocr-review {
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid #b9d9ef;
+  border-radius: 10px;
+  background: #f4fbff;
+}
+.ocr-review[hidden] { display: none !important; }
+.ocr-review-title {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--navy-900);
+}
+.ocr-review-note {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.ocr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.ocr-grid .field { margin-bottom: 0; }
+.ocr-full { grid-column: 1 / -1; }
+@media (max-width: 420px) {
+  .ocr-grid { grid-template-columns: 1fr; }
+  .ocr-full { grid-column: auto; }
+}
+
 </style>
 </head>
 <body>
@@ -455,6 +487,37 @@
           <input type="file" id="receipt" accept="image/*" required>
         </div>
       </div>
+      <div id="ocr-review" class="ocr-review" hidden>
+        <p class="ocr-review-title">レシート読取結果（手入力で修正できます）</p>
+        <p class="ocr-review-note">読み取り内容を確認し、間違いがあれば直接入力し直してから登録してください。</p>
+        <div class="ocr-grid">
+          <div class="field ocr-full">
+            <label for="storeName">店名・内容</label>
+            <input type="text" id="storeName" placeholder="例）コーナン／現場用消耗品">
+          </div>
+          <div class="field">
+            <label for="taxRate">税率</label>
+            <select id="taxRate">
+              <option value="">－ 選択してください －</option>
+              <option value="8">8%</option>
+              <option value="10">10%</option>
+              <option value="mixed">8%・10%混在</option>
+              <option value="unknown">不明・対象外</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="tax8Amount">8%対象金額</label>
+            <input type="number" id="tax8Amount" min="0" step="1" inputmode="numeric" placeholder="0">
+          </div>
+          <div class="field">
+            <label for="tax10Amount">10%対象金額</label>
+            <input type="number" id="tax10Amount" min="0" step="1" inputmode="numeric" placeholder="0">
+          </div>
+          <div class="field ocr-full">
+            <p class="employee-hint" style="margin:0;">利用日・摘要・金額も上の入力欄を直接修正できます。</p>
+          </div>
+        </div>
+      </div>
       <button type="submit" class="submit-btn">登録する</button>
       <p id="form-error" class="form-error" hidden></p>
     </form>
@@ -466,7 +529,7 @@
     <p id="storage-status" class="employee-hint" style="margin-bottom:12px;"></p>
     <button type="button" id="export-csv-btn" class="directory-toggle" style="margin-bottom:16px;">⬇ CSVで書き出す（経理・Excel用）</button>
     <div id="entries-list"></div>
-    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-16-F（デバッグ用）</p>
+    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-16-G（OCR手修正版）</p>
   </section>
 </div>
 
@@ -504,6 +567,11 @@
   const amountInput = document.getElementById('amount');
   const receiptInput = document.getElementById('receipt');
   const receiptPreview = document.getElementById('receipt-preview');
+  const ocrReview = document.getElementById('ocr-review');
+  const storeNameInput = document.getElementById('storeName');
+  const taxRateInput = document.getElementById('taxRate');
+  const tax8AmountInput = document.getElementById('tax8Amount');
+  const tax10AmountInput = document.getElementById('tax10Amount');
   const formError = document.getElementById('form-error');
   const entriesList = document.getElementById('entries-list');
   const lightbox = document.getElementById('lightbox');
@@ -752,11 +820,17 @@
       lastOcrStoreName = '';
       lastOcrTax8 = 0;
       lastOcrTax10 = 0;
+      storeNameInput.value = '';
+      taxRateInput.value = '';
+      tax8AmountInput.value = '';
+      tax10AmountInput.value = '';
+      ocrReview.hidden = false;
       runReceiptOCR(pendingPhoto);
     } catch (err) {
       pendingPhoto = null;
       receiptPreview.classList.remove('has-image');
       receiptPreview.textContent = 'タップして撮影・選択';
+      ocrReview.hidden = true;
       showError('写真の処理に失敗しました。もう一度お試しください。');
     }
   });
@@ -778,6 +852,8 @@
       let filledAny = false;
       if (result.storeName) {
         lastOcrStoreName = String(result.storeName).trim();
+        storeNameInput.value = lastOcrStoreName;
+        filledAny = true;
       }
       if (result.amount != null && !isNaN(Number(result.amount))) {
         amountInput.value = Math.round(Number(result.amount));
@@ -791,6 +867,11 @@
       const tax10 = Number(result.tax10) || 0;
       lastOcrTax8 = tax8;
       lastOcrTax10 = tax10;
+      tax8AmountInput.value = tax8 > 0 ? Math.round(tax8) : '';
+      tax10AmountInput.value = tax10 > 0 ? Math.round(tax10) : '';
+      if (tax8 > 0 && tax10 > 0) taxRateInput.value = 'mixed';
+      else if (tax8 > 0) taxRateInput.value = '8';
+      else if (tax10 > 0) taxRateInput.value = '10';
       if ((tax8 > 0 || tax10 > 0) && !memoInput.value.trim()) {
         const parts = [];
         if (tax8 > 0) parts.push('8%対象:' + formatYen(tax8));
@@ -807,6 +888,34 @@
       showError('通信エラー：' + String(e && e.message ? e.message : e).slice(0, 200));
     }
   }
+
+  storeNameInput.addEventListener('input', () => {
+    lastOcrStoreName = storeNameInput.value.trim();
+  });
+
+  tax8AmountInput.addEventListener('input', () => {
+    lastOcrTax8 = Number(tax8AmountInput.value) || 0;
+  });
+
+  tax10AmountInput.addEventListener('input', () => {
+    lastOcrTax10 = Number(tax10AmountInput.value) || 0;
+  });
+
+  taxRateInput.addEventListener('change', () => {
+    const total = Number(amountInput.value) || 0;
+    if (taxRateInput.value === '8') {
+      if (!tax8AmountInput.value && total) tax8AmountInput.value = total;
+      tax10AmountInput.value = '';
+    } else if (taxRateInput.value === '10') {
+      if (!tax10AmountInput.value && total) tax10AmountInput.value = total;
+      tax8AmountInput.value = '';
+    } else if (taxRateInput.value === 'unknown') {
+      tax8AmountInput.value = '';
+      tax10AmountInput.value = '';
+    }
+    lastOcrTax8 = Number(tax8AmountInput.value) || 0;
+    lastOcrTax10 = Number(tax10AmountInput.value) || 0;
+  });
 
   function formatYen(n) {
     return '¥' + Number(n).toLocaleString('ja-JP');
@@ -1121,7 +1230,10 @@
     const siteName = siteNameInput.value.trim();
     const memo = memoInput.value.trim();
     const amount = amountInput.value;
-    const category = lastOcrStoreName || '経費';
+    const category = storeNameInput.value.trim() || lastOcrStoreName || '経費';
+    lastOcrStoreName = storeNameInput.value.trim();
+    lastOcrTax8 = Number(tax8AmountInput.value) || 0;
+    lastOcrTax10 = Number(tax10AmountInput.value) || 0;
 
     if (!employeeNo || !expenseDate || !paymentMethod || !amount) {
       showError('社員番号・利用日・支払方法・金額を入力してください。');
@@ -1161,6 +1273,11 @@
       lastOcrStoreName = '';
       lastOcrTax8 = 0;
       lastOcrTax10 = 0;
+      storeNameInput.value = '';
+      taxRateInput.value = '';
+      tax8AmountInput.value = '';
+      tax10AmountInput.value = '';
+      ocrReview.hidden = true;
       pendingPhoto = null;
       receiptPreview.classList.remove('has-image');
       receiptPreview.textContent = 'タップして撮影・選択';
