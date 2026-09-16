@@ -466,7 +466,7 @@
     <p id="storage-status" class="employee-hint" style="margin-bottom:12px;"></p>
     <button type="button" id="export-csv-btn" class="directory-toggle" style="margin-bottom:16px;">⬇ CSVで書き出す（経理・Excel用）</button>
     <div id="entries-list"></div>
-    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-16-D</p>
+    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-16-E（デバッグ用）</p>
   </section>
 </div>
 
@@ -772,7 +772,7 @@
       });
       const result = await res.json();
       if (result.error) {
-        showToast('自動読み取りに失敗しました。手動で入力してください。');
+        showToast('読み取り失敗：' + String(result.error).slice(0, 80));
         return;
       }
       let filledAny = false;
@@ -804,7 +804,7 @@
       }
       showToast(filledAny ? 'レシート内容を自動入力しました。内容をご確認ください。' : '自動読み取りできる内容がありませんでした。');
     } catch (e) {
-      showToast('自動読み取りに失敗しました。手動で入力してください。');
+      showToast('通信エラー：' + String(e && e.message ? e.message : e).slice(0, 80));
     }
   }
 
