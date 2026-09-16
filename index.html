@@ -543,7 +543,7 @@
     <p id="storage-status" class="employee-hint" style="margin-bottom:12px;"></p>
     <button type="button" id="export-csv-btn" class="directory-toggle" style="margin-bottom:16px;">⬇ CSVで書き出す（経理・Excel用）</button>
     <div id="entries-list"></div>
-    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-16-I（OCR安定版＋摘要3段）</p>
+    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-16-J（OCR非同期安定版＋摘要3段）</p>
   </section>
 </div>
 
@@ -630,6 +630,7 @@
   let lastOcrStoreName = '';
   let lastOcrTax8 = 0;
   let lastOcrTax10 = 0;
+  let ocrRequestSequence = 0;
   let ocrReady = false;
   let ocrInProgress = false;
   let entries = loadJSON('expense-entries', []);
@@ -895,6 +896,7 @@
 
   async function runReceiptOCR(photoDataUrl) {
     if (!SHEET_WEBHOOK_URL || !photoDataUrl || ocrInProgress) return;
+    const requestSequence = ++ocrRequestSequence;
     clearError();
     ocrInProgress = true;
     ocrReady = false;
@@ -908,27 +910,49 @@
     try {
       // Content-Type ヘッダーを明示しないことで、ブラウザごとのCORS/URL解釈差を避けます。
       // Apps Script 側では e.postData.contents から同じJSONを受け取れます。
-      const res = await fetch(SHEET_WEBHOOK_URL, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'text/plain;charset=utf-8'
-  },
-  body: JSON.stringify({
-    type: 'ocr',
-    photoData: photoDataUrl
-  }),
-  signal: controller.signal
-});
-      const rawText = await res.text();
-      if (!res.ok) {
-        throw new Error('HTTP ' + res.status + (rawText ? '：' + rawText.slice(0, 120) : ''));
+      // Apps Script のPOST応答は外部サイト(GitHub Pages)から読むと
+      // Google側のリダイレクト/CORSで失敗することがあるため、
+      // POSTは no-cors で送信し、結果はGETでポーリングして受け取ります。
+      const requestId = 'ocr_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+
+      await fetch(SHEET_WEBHOOK_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          type: 'ocr_async',
+          requestId,
+          photoData: photoDataUrl
+        })
+      });
+
+      let result = null;
+      let notFoundCount = 0;
+      const pollStarted = Date.now();
+      while ((Date.now() - pollStarted) < 30000) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const pollUrl = SHEET_WEBHOOK_URL + '?ocrResult=' + encodeURIComponent(requestId) + '&_ts=' + Date.now();
+        const pollRes = await fetch(pollUrl, { method: 'GET', cache: 'no-store', credentials: 'omit', signal: controller.signal });
+        if (pollRes.status === 404) {
+          notFoundCount += 1;
+          if (notFoundCount >= 2) {
+            throw new Error('OCR_ENDPOINT_404');
+          }
+          continue;
+        }
+        if (!pollRes.ok) continue;
+        const pollText = await pollRes.text();
+        let pollJson;
+        try { pollJson = JSON.parse(pollText); } catch (_) { continue; }
+        if (pollJson && pollJson.status === 'pending') continue;
+        if (pollJson && pollJson.status === 'done') { result = pollJson.result || {}; break; }
+        if (pollJson && pollJson.status === 'error') {
+          throw new Error(pollJson.error || 'OCRサーバーでエラーが発生しました');
+        }
       }
-      let result;
-      try {
-        result = JSON.parse(rawText);
-      } catch (parseErr) {
-        throw new Error('OCRサーバーの応答形式を確認できませんでした' + (rawText ? '：' + rawText.slice(0, 120) : ''));
-      }
+      if (!result) throw new Error('OCR結果の受信が30秒以内に完了しませんでした');
+      // A late response for an older photo must never overwrite the current form.
+      if (requestSequence !== ocrRequestSequence || photoDataUrl !== pendingPhoto) return;
       if (result.error) {
         showError('読み取り失敗：' + String(result.error).slice(0, 200));
         return;
@@ -973,9 +997,13 @@
         : '⚠️ 一部を読み取れませんでした。撮り直すか、読み取れなかった欄だけ修正してください。';
       showToast(filledAny ? 'レシート内容を自動入力しました' : '自動読み取りできる内容がありませんでした');
     } catch (e) {
-      const msg = e && e.name === 'AbortError'
-        ? '通信が30秒以内に完了しませんでした。電波状況を確認して再度お試しください。'
-        : String(e && e.message ? e.message : e).slice(0, 220);
+      const rawMessage = String(e && e.message ? e.message : e);
+      const endpointMissing = rawMessage === 'OCR_ENDPOINT_404' || /HTTP 404/.test(rawMessage);
+      const msg = endpointMissing
+        ? 'OCR接続先が見つかりません（404）。Apps Scriptを新バージョンで再デプロイしてください。'
+        : (e && e.name === 'AbortError'
+          ? '通信が30秒以内に完了しませんでした。電波状況を確認して再度お試しください。'
+          : rawMessage.slice(0, 220));
       ocrReady = false;
       if (ocrStatusEl) ocrStatusEl.textContent = '❌ 自動読取に失敗しました。写真を撮り直すか「もう一度読み取る」を押してください。';
       showError('レシートの自動読取に失敗しました。まず再読取をお試しください。\n詳細：' + msg);
@@ -1216,7 +1244,9 @@
       amount: entry.amount,
       tax8: entry.tax8 || 0,
       tax10: entry.tax10 || 0,
-      photoData: entry.photoData || ''
+      photoData: entry.photoData || '',
+      notifyAdmin: true,
+      sourceUrl: location.href
     });
   }
 
