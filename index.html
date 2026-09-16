@@ -681,31 +681,66 @@
     loadEntries();
   }
 
+  function normalizeDigits(value) {
+    return String(value == null ? '' : value)
+      .replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+      .replace(/\D/g, '');
+  }
+
+  function employeePhone4(entry) {
+    if (!entry || typeof entry === 'string') return '';
+    const candidates = [
+      entry.phone4, entry.phoneLast4, entry.mobile4, entry.tel4,
+      entry['携帯下4桁'], entry['携帯下４桁'], entry['携帯4桁'], entry['携帯４桁']
+    ];
+    for (const value of candidates) {
+      const digits = normalizeDigits(value);
+      if (digits) return digits.slice(-4).padStart(4, '0');
+    }
+    return '';
+  }
+
   function findEmployeeByPhone4(phone4) {
-    const target = phone4.padStart(4, '0');
-    const nos = Object.keys(employeeDirectory);
+    const digits = normalizeDigits(phone4);
+    if (digits.length !== 4) return null;
+    const target = digits.padStart(4, '0');
+    const nos = Object.keys(employeeDirectory || {});
     for (const no of nos) {
-      const e = employeeDirectory[no];
-      const p = typeof e === 'string' ? '' : (e && e.phone4) || '';
-      if (p && p.padStart(4, '0') === target) return no;
+      const p = employeePhone4(employeeDirectory[no]);
+      if (p && p === target) return no;
     }
     return null;
   }
 
-  loginBtn.addEventListener('click', () => {
-    const phone4 = loginPhoneInput.value.trim();
+  loginBtn.addEventListener('click', async () => {
+    const phone4 = normalizeDigits(loginPhoneInput.value.trim());
     if (!/^\d{4}$/.test(phone4)) {
       loginErrorEl.textContent = '携帯番号の下4桁（数字4桁）を入力してください。';
       loginErrorEl.hidden = false;
       return;
     }
-    const no = findEmployeeByPhone4(phone4);
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = '社員情報を確認中…';
+    loginErrorEl.hidden = true;
+
+    let no = findEmployeeByPhone4(phone4);
+    let directoryRefreshOk = true;
     if (!no) {
-      loginErrorEl.textContent = '一致する社員が見つかりません。番号をご確認ください。';
+      directoryRefreshOk = await fetchSharedDirectories();
+      no = findEmployeeByPhone4(phone4);
+    }
+
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'ログインする';
+
+    if (!no) {
+      loginErrorEl.textContent = directoryRefreshOk
+        ? '一致する社員が見つかりません。社員一覧の「携帯下4桁」をご確認ください。'
+        : '社員一覧を取得できませんでした。通信状況を確認して、もう一度ログインしてください。';
       loginErrorEl.hidden = false;
       return;
     }
-    loginErrorEl.hidden = true;
     applyLogin(no);
   });
 
@@ -1174,7 +1209,9 @@
   async function fetchSharedDirectories() {
     if (!SHEET_WEBHOOK_URL) return false;
     try {
-      const res = await fetch(SHEET_WEBHOOK_URL, { method: 'GET' });
+      const dirUrl = SHEET_WEBHOOK_URL + (SHEET_WEBHOOK_URL.includes('?') ? '&' : '?') + '_ts=' + Date.now();
+      const res = await fetch(dirUrl, { method: 'GET', cache: 'no-store', credentials: 'omit' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       if (data.employees && typeof data.employees === 'object') {
         employeeDirectory = data.employees;
@@ -1352,7 +1389,7 @@
     }
   });
 
-  function init() {
+  async function init() {
     const storageStatusEl = document.getElementById('storage-status');
     if (storageStatusEl) {
       storageStatusEl.textContent = STORAGE_AVAILABLE
@@ -1362,15 +1399,20 @@
     if (expenseDateInput) {
       expenseDateInput.value = new Date().toISOString().slice(0, 10);
     }
+
     renderSiteOptions();
     renderDirectory();
+
+    // ログイン判定より先に、スプレッドシートの最新社員一覧を取得する。
+    // 初回アクセスやファイル更新直後でも、携帯下4桁ログインが失敗しにくくなる。
+    await fetchSharedDirectories();
+
     if (currentEmployeeNo && employeeDirectory[currentEmployeeNo]) {
       applyLogin(currentEmployeeNo);
     } else {
       showLoginOverlay();
     }
     loadEntries();
-    fetchSharedDirectories();
   }
 
   init();
