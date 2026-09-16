@@ -87,6 +87,7 @@
   .field label { display: block; font-size: 12.5px; font-weight: 500; color: var(--ink-soft); margin-bottom: 5px; }
   .field input[type="text"],
   .field input[type="number"],
+  .field textarea,
   .field select {
     width: 100%;
     font-family: 'Noto Sans JP', sans-serif;
@@ -104,7 +105,7 @@
     background-size: 5px 5px, 5px 5px;
     background-repeat: no-repeat;
   }
-  .field input:focus, .field select:focus {
+  .field input:focus, .field textarea:focus, .field select:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-soft);
@@ -412,8 +413,13 @@
 .ocr-grid .field { margin-bottom: 0; }
 .ocr-full { grid-column: 1 / -1; }
 @media (max-width: 420px) {
-  .ocr-grid { grid-template-columns: 1fr; }
-  .ocr-full { grid-column: auto; }
+  /* スマホでも8%対象金額と10%対象金額は横並びを維持 */
+  .ocr-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+  .ocr-full { grid-column: 1 / -1; }
+  .ocr-grid .field { min-width: 0; }
+  .ocr-grid .field label { font-size: 11.5px; }
+  .ocr-grid .field input,
+  .ocr-grid .field select { min-width: 0; width: 100%; }
 }
 
 </style>
@@ -459,8 +465,14 @@
         </select>
       </div>
       <div class="field">
-        <label for="memo">摘要（任意）</label>
-        <input type="text" id="memo" placeholder="例）取引先打合せ用資料印刷代">
+        <label>摘要（任意・3段）</label>
+        <div style="font-size:11.5px; color:var(--ink-soft); margin-bottom:6px;">①はレシートから自動入力。②③は必要な場合だけ自由に追加入力できます。</div>
+        <label for="memo1" style="margin-top:0;">摘要①（自動入力）</label>
+        <textarea id="memo1" rows="2" placeholder="レシートの商品・内容を自動入力します" style="resize:vertical; margin-bottom:8px;"></textarea>
+        <label for="memo2">摘要②（任意）</label>
+        <textarea id="memo2" rows="2" placeholder="例：用途・現場名・打合せ名など" style="resize:vertical; margin-bottom:8px;"></textarea>
+        <label for="memo3">摘要③（任意）</label>
+        <textarea id="memo3" rows="2" placeholder="例：補足・相手先・備考など" style="resize:vertical;"></textarea>
       </div>
       <div class="field">
         <label for="paymentMethod">支払方法</label>
@@ -496,7 +508,7 @@
             <label for="storeName">店名・内容</label>
             <input type="text" id="storeName" placeholder="例）コーナン／現場用消耗品">
           </div>
-          <div class="field">
+          <div class="field ocr-full">
             <label for="taxRate">税率</label>
             <select id="taxRate">
               <option value="">－ 選択してください －</option>
@@ -531,7 +543,7 @@
     <p id="storage-status" class="employee-hint" style="margin-bottom:12px;"></p>
     <button type="button" id="export-csv-btn" class="directory-toggle" style="margin-bottom:16px;">⬇ CSVで書き出す（経理・Excel用）</button>
     <div id="entries-list"></div>
-    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-16-H（OCR自動入力優先版）</p>
+    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-16-I（OCR安定版＋摘要3段）</p>
   </section>
 </div>
 
@@ -565,7 +577,9 @@
   const confirmMessage = document.getElementById('confirm-message');
   const confirmCancelBtn = document.getElementById('confirm-cancel');
   const confirmOkBtn = document.getElementById('confirm-ok');
-  const memoInput = document.getElementById('memo');
+  const memo1Input = document.getElementById('memo1');
+  const memo2Input = document.getElementById('memo2');
+  const memo3Input = document.getElementById('memo3');
   const amountInput = document.getElementById('amount');
   const receiptInput = document.getElementById('receipt');
   const receiptPreview = document.getElementById('receipt-preview');
@@ -947,13 +961,9 @@
       if (tax8 > 0 && tax10 > 0) taxRateInput.value = 'mixed';
       else if (tax8 > 0) taxRateInput.value = '8';
       else if (tax10 > 0) taxRateInput.value = '10';
-      if (!memoInput.value.trim()) {
-        const memoParts = [];
-        if (description) memoParts.push(description);
-        else if (storeName) memoParts.push(storeName);
-        if (tax8 > 0) memoParts.push('8%対象:' + formatYen(tax8));
-        if (tax10 > 0) memoParts.push('10%対象:' + formatYen(tax10));
-        if (memoParts.length) { memoInput.value = memoParts.join(' '); filledAny = true; }
+      if (!memo1Input.value.trim()) {
+        if (description) { memo1Input.value = description; filledAny = true; }
+        else if (storeName) { memo1Input.value = storeName; filledAny = true; }
       }
       const essentialOk = !!expenseDateInput.value && !!amountInput.value && !!storeNameInput.value.trim();
       ocrReady = essentialOk;
@@ -1199,6 +1209,9 @@
       paymentMethod: entry.paymentMethod || '',
       category: entry.category,
       memo: entry.memo || '',
+      memo1: entry.memo1 || '',
+      memo2: entry.memo2 || '',
+      memo3: entry.memo3 || '',
       amount: entry.amount,
       tax8: entry.tax8 || 0,
       tax10: entry.tax10 || 0,
@@ -1259,7 +1272,7 @@
       showToast('申請履歴がありません');
       return;
     }
-    const headers = ['申請日時', '社員番号', '氏名', '利用日', '現場名', '支払方法', '項目', '摘要', '金額', '8%対象', '10%対象'];
+    const headers = ['申請日時', '社員番号', '氏名', '利用日', '現場名', '支払方法', '項目', '摘要①', '摘要②', '摘要③', '金額', '8%対象', '10%対象'];
     const rows = exportEntries.map((e) => [
       e.timestamp ? new Date(e.timestamp).toLocaleString('ja-JP') : '',
       e.employeeNo || '',
@@ -1268,7 +1281,9 @@
       e.siteName || '',
       e.paymentMethod || '',
       e.category || '',
-      e.memo || '',
+      e.memo1 != null ? e.memo1 : (e.memo || ''),
+      e.memo2 || '',
+      e.memo3 || '',
       e.amount != null ? e.amount : '',
       e.tax8 || '',
       e.tax10 || ''
@@ -1325,7 +1340,10 @@
     const expenseDate = expenseDateInput.value;
     const paymentMethod = paymentMethodInput.value;
     const siteName = siteNameInput.value.trim();
-    const memo = memoInput.value.trim();
+    const memo1 = memo1Input.value.trim();
+    const memo2 = memo2Input.value.trim();
+    const memo3 = memo3Input.value.trim();
+    const memo = [memo1, memo2, memo3].filter(Boolean).join(' / ');
     const amount = amountInput.value;
     const category = storeNameInput.value.trim() || lastOcrStoreName || '経費';
     lastOcrStoreName = storeNameInput.value.trim();
@@ -1355,6 +1373,9 @@
       siteName,
       category,
       memo,
+      memo1,
+      memo2,
+      memo3,
       amount: Number(amount),
       tax8: lastOcrTax8 || 0,
       tax10: lastOcrTax10 || 0,
