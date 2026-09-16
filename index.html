@@ -819,13 +819,48 @@
     return ADMIN_EMPLOYEE_NOS.includes(no);
   }
 
+  function entryKey(entry) {
+    return (entry.timestamp || '') + '|' + (entry.employeeNo || '') + '|' + (entry.amount || '');
+  }
+
+  function getHiddenKeys() {
+    if (!currentEmployeeNo) return [];
+    return loadJSON('expense-hidden-' + currentEmployeeNo, []);
+  }
+
+  function hideEntryForSelf(entry) {
+    if (!currentEmployeeNo) return;
+    const key = entryKey(entry);
+    const hidden = getHiddenKeys();
+    if (!hidden.includes(key)) {
+      hidden.push(key);
+      saveJSON('expense-hidden-' + currentEmployeeNo, hidden);
+    }
+  }
+
+  function monthLabel(entry) {
+    const src = entry.expenseDate || entry.timestamp;
+    if (!src) return 'その他';
+    const d = new Date(src);
+    if (isNaN(d.getTime())) return 'その他';
+    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月';
+  }
+
   function loadEntries() {
     const usingServerData = allExpenses.length > 0;
     const source = usingServerData ? allExpenses : entries;
     const admin = isAdmin(currentEmployeeNo);
-    const visibleEntries = admin
+    let visibleEntries = admin
       ? source
       : source.filter((e) => e.employeeNo === currentEmployeeNo);
+    const hidden = getHiddenKeys();
+    if (hidden.length) {
+      visibleEntries = visibleEntries.filter((e) => {
+        // Only ever hide entries belonging to the logged-in person themselves
+        if (e.employeeNo !== currentEmployeeNo) return true;
+        return !hidden.includes(entryKey(e));
+      });
+    }
     const viewLabel = document.getElementById('history-view-label');
     if (viewLabel) {
       viewLabel.textContent = admin ? '管理者ビュー：全員の申請' : '自分の申請履歴';
@@ -833,74 +868,107 @@
     renderEntries(visibleEntries, !usingServerData);
   }
 
-  function renderEntries(entries, allowDelete) {
+  function renderEntries(entries, allowFullDelete) {
     if (!entries.length) {
       entriesList.innerHTML = '<div class="empty-state">まだ申請がありません。上のフォームから最初の経費を登録してください。</div>';
       return;
     }
     entriesList.innerHTML = '';
     const sorted = entries.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    const groups = [];
+    const groupIndex = {};
     sorted.forEach((entry) => {
-      const row = document.createElement('div');
-      row.className = 'ledger-row';
-
-      const thumb = document.createElement('div');
-      thumb.className = 'thumb';
-      const img = document.createElement('img');
-      const isLocalPhoto = !!entry.photoData;
-      if (isLocalPhoto) {
-        img.src = entry.photoData;
-      } else if (entry.photoUrl) {
-        img.src = entry.photoUrl;
+      const label = monthLabel(entry);
+      if (!(label in groupIndex)) {
+        groupIndex[label] = groups.length;
+        groups.push({ label, items: [] });
       }
-      thumb.appendChild(img);
-      thumb.addEventListener('click', () => {
+      groups[groupIndex[label]].items.push(entry);
+    });
+
+    groups.forEach((group) => {
+      const heading = document.createElement('p');
+      heading.style.cssText = 'font-weight:700; font-size:13px; color:var(--navy-800); margin:14px 0 8px;';
+      heading.textContent = group.label;
+      entriesList.appendChild(heading);
+
+      group.items.forEach((entry) => {
+        const row = document.createElement('div');
+        row.className = 'ledger-row';
+        row.style.marginBottom = '10px';
+
+        const thumb = document.createElement('div');
+        thumb.className = 'thumb';
+        const img = document.createElement('img');
+        const isLocalPhoto = !!entry.photoData;
         if (isLocalPhoto) {
-          lightboxImg.src = entry.photoData;
-          lightbox.hidden = false;
+          img.src = entry.photoData;
         } else if (entry.photoUrl) {
-          window.open(entry.photoUrl, '_blank');
+          img.src = entry.photoUrl;
         }
+        thumb.appendChild(img);
+        thumb.addEventListener('click', () => {
+          if (isLocalPhoto) {
+            lightboxImg.src = entry.photoData;
+            lightbox.hidden = false;
+          } else if (entry.photoUrl) {
+            window.open(entry.photoUrl, '_blank');
+          }
+        });
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const empLabel = '社員番号 ' + escapeHtml(entry.employeeNo) + (entry.employeeName ? '（' + escapeHtml(entry.employeeName) + '）' : '');
+        const siteLine = entry.siteName
+          ? ('現場 ' + escapeHtml(entry.siteName))
+          : '';
+        const subLine = entry.memo
+          ? (empLabel + (siteLine ? ' ・ ' + siteLine : '') + ' ・ ' + escapeHtml(entry.memo))
+          : (empLabel + (siteLine ? ' ・ ' + siteLine : '') + ' ・ ' + (entry.expenseDate || formatDate(entry.timestamp)));
+        const tax8Val = Number(entry.tax8) || 0;
+        const tax10Val = Number(entry.tax10) || 0;
+        const taxParts = [];
+        if (tax8Val > 0) taxParts.push('8%対象:' + formatYen(tax8Val));
+        if (tax10Val > 0) taxParts.push('10%対象:' + formatYen(tax10Val));
+        const taxLine = taxParts.length ? '<p class="sub">' + taxParts.join(' ・ ') + '</p>' : '';
+        meta.innerHTML =
+          '<p class="category">' + escapeHtml(entry.category) + (entry.paymentMethod ? ' ・ ' + escapeHtml(entry.paymentMethod) : '') + '</p>' +
+          '<p class="sub">' + subLine + '</p>' + taxLine;
+
+        const amountCol = document.createElement('div');
+        amountCol.className = 'amount-col';
+        const amountEl = document.createElement('div');
+        amountEl.className = 'amount';
+        amountEl.textContent = formatYen(entry.amount);
+        amountCol.appendChild(amountEl);
+
+        const isOwnEntry = entry.employeeNo === currentEmployeeNo;
+        if (allowFullDelete && entry.id) {
+          const delBtn = document.createElement('button');
+          delBtn.className = 'del-btn';
+          delBtn.textContent = '削除';
+          delBtn.addEventListener('click', () => deleteEntry(entry.id));
+          amountCol.appendChild(delBtn);
+        } else if (isOwnEntry) {
+          const hideBtn = document.createElement('button');
+          hideBtn.className = 'del-btn';
+          hideBtn.textContent = '履歴から削除';
+          hideBtn.addEventListener('click', async () => {
+            const ok = await showConfirm('この申請を自分の履歴から削除しますか？\n（スプレッドシート上の記録は残ります。他の人の画面には影響しません。）');
+            if (!ok) return;
+            hideEntryForSelf(entry);
+            showToast('履歴から削除しました');
+            loadEntries();
+          });
+          amountCol.appendChild(hideBtn);
+        }
+
+        row.appendChild(thumb);
+        row.appendChild(meta);
+        row.appendChild(amountCol);
+        entriesList.appendChild(row);
       });
-
-      const meta = document.createElement('div');
-      meta.className = 'meta';
-      const empLabel = '社員番号 ' + escapeHtml(entry.employeeNo) + (entry.employeeName ? '（' + escapeHtml(entry.employeeName) + '）' : '');
-      const siteLine = entry.siteName
-        ? ('現場 ' + escapeHtml(entry.siteName))
-        : '';
-      const subLine = entry.memo
-        ? (empLabel + (siteLine ? ' ・ ' + siteLine : '') + ' ・ ' + escapeHtml(entry.memo))
-        : (empLabel + (siteLine ? ' ・ ' + siteLine : '') + ' ・ ' + (entry.expenseDate || formatDate(entry.timestamp)));
-      const tax8Val = Number(entry.tax8) || 0;
-      const tax10Val = Number(entry.tax10) || 0;
-      const taxParts = [];
-      if (tax8Val > 0) taxParts.push('8%対象:' + formatYen(tax8Val));
-      if (tax10Val > 0) taxParts.push('10%対象:' + formatYen(tax10Val));
-      const taxLine = taxParts.length ? '<p class="sub">' + taxParts.join(' ・ ') + '</p>' : '';
-      meta.innerHTML =
-        '<p class="category">' + escapeHtml(entry.category) + (entry.paymentMethod ? ' ・ ' + escapeHtml(entry.paymentMethod) : '') + '</p>' +
-        '<p class="sub">' + subLine + '</p>' + taxLine;
-
-      const amountCol = document.createElement('div');
-      amountCol.className = 'amount-col';
-      const amountEl = document.createElement('div');
-      amountEl.className = 'amount';
-      amountEl.textContent = formatYen(entry.amount);
-      amountCol.appendChild(amountEl);
-
-      if (allowDelete && entry.id) {
-        const delBtn = document.createElement('button');
-        delBtn.className = 'del-btn';
-        delBtn.textContent = '削除';
-        delBtn.addEventListener('click', () => deleteEntry(entry.id));
-        amountCol.appendChild(delBtn);
-      }
-
-      row.appendChild(thumb);
-      row.appendChild(meta);
-      row.appendChild(amountCol);
-      entriesList.appendChild(row);
     });
   }
 
