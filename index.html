@@ -389,12 +389,11 @@
 <body>
 <div id="login-overlay" class="confirm-overlay" hidden style="background: var(--bg); align-items: flex-start; padding-top: 60px;">
   <div class="confirm-box" style="max-width: 340px;">
-    <p style="font-weight:700; font-size:16px; margin-bottom:14px;">あなたの社員番号を選択してください</p>
+    <p style="font-weight:700; font-size:16px; margin-bottom:14px;">携帯電話番号の下4桁でログイン</p>
     <div class="field" style="margin-bottom:14px;">
-      <select id="loginEmployeeSelect">
-        <option value="" disabled selected>選択してください</option>
-      </select>
+      <input type="text" id="loginPhone4" inputmode="numeric" maxlength="4" placeholder="例）1234" style="font-size:20px; text-align:center; letter-spacing:0.2em;">
     </div>
+    <p id="login-error" class="form-error" hidden style="margin-bottom:10px;"></p>
     <button type="button" id="loginBtn" class="mini-btn mini-btn-primary" style="width:100%;">ログインする</button>
   </div>
 </div>
@@ -489,7 +488,8 @@
   const form = document.getElementById('expense-form');
   const employeeNoInput = document.getElementById('employeeNo');
   const loginOverlay = document.getElementById('login-overlay');
-  const loginEmployeeSelect = document.getElementById('loginEmployeeSelect');
+  const loginPhoneInput = document.getElementById('loginPhone4');
+  const loginErrorEl = document.getElementById('login-error');
   const loginBtn = document.getElementById('loginBtn');
   const loggedInAsEl = document.getElementById('logged-in-as');
   const paymentMethodInput = document.getElementById('paymentMethod');
@@ -545,52 +545,55 @@
   let lastOcrTax10 = 0;
   let entries = loadJSON('expense-entries', []);
   let siteNames = loadJSON('expense-site-names', ['事務所', '山田倉庫', '現場']);
-  let employeeDirectory = loadJSON('expense-employee-directory', { '14': '久米絵利子' });
+  let employeeDirectory = loadJSON('expense-employee-directory', { '14': { name: '久米絵利子', phone4: '' } });
   let currentEmployeeNo = loadJSON('expense-current-employee', null);
   const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwK93Nhg3S5SyEh-3tqARh7I1aUR2ykAzuTDG0I172JqJHlGA8Nx0kC82iRGw31l4xZ/exec';
   const ADMIN_EMPLOYEE_NOS = ['14'];
   let allExpenses = [];
 
+  function employeeName(no) {
+    const e = employeeDirectory[no];
+    if (!e) return '';
+    return typeof e === 'string' ? e : (e.name || '');
+  }
+
   function renderDirectory() {
     renderEmployeeSelect();
   }
 
-  function populateEmployeeSelect(selectEl, placeholderText) {
-    const previousValue = selectEl.value;
+  function renderEmployeeSelect() {
+    const previousValue = employeeNoInput.value;
     const nos = Object.keys(employeeDirectory).sort((a, b) => a.localeCompare(b, 'ja', { numeric: true }));
-    selectEl.innerHTML = '';
+    employeeNoInput.innerHTML = '';
     const placeholder = document.createElement('option');
     placeholder.value = '';
     placeholder.disabled = true;
-    placeholder.textContent = nos.length ? placeholderText : '社員が登録されていません';
+    placeholder.textContent = nos.length ? '選択してください' : '社員が登録されていません';
     placeholder.selected = true;
-    selectEl.appendChild(placeholder);
+    employeeNoInput.appendChild(placeholder);
     nos.forEach((no) => {
       const opt = document.createElement('option');
       opt.value = no;
-      opt.textContent = no + '：' + employeeDirectory[no];
-      selectEl.appendChild(opt);
+      opt.textContent = no + '：' + employeeName(no);
+      employeeNoInput.appendChild(opt);
     });
     if (nos.includes(previousValue)) {
-      selectEl.value = previousValue;
+      employeeNoInput.value = previousValue;
     }
   }
 
-  function renderEmployeeSelect() {
-    populateEmployeeSelect(employeeNoInput, '選択してください');
-    populateEmployeeSelect(loginEmployeeSelect, '選択してください');
-  }
-
   function showLoginOverlay() {
-    populateEmployeeSelect(loginEmployeeSelect, '選択してください');
+    loginPhoneInput.value = '';
+    loginErrorEl.hidden = true;
     loginOverlay.hidden = false;
+    loginPhoneInput.focus();
   }
 
   function applyLogin(no) {
     currentEmployeeNo = no;
     saveJSON('expense-current-employee', no);
     loginOverlay.hidden = true;
-    const name = employeeDirectory[no] || '';
+    const name = employeeName(no);
     loggedInAsEl.innerHTML = (name ? name + '（社員番号' + no + '）' : '社員番号' + no) +
       ' としてログイン中　<button type="button" id="switch-user-btn" class="edit-link" style="font-size:12.5px;">切替</button>';
     document.getElementById('switch-user-btn').addEventListener('click', () => {
@@ -603,13 +606,38 @@
     loadEntries();
   }
 
+  function findEmployeeByPhone4(phone4) {
+    const nos = Object.keys(employeeDirectory);
+    for (const no of nos) {
+      const e = employeeDirectory[no];
+      const p = typeof e === 'string' ? '' : (e && e.phone4) || '';
+      if (p && p === phone4) return no;
+    }
+    return null;
+  }
+
   loginBtn.addEventListener('click', () => {
-    const no = loginEmployeeSelect.value;
-    if (!no) {
-      showToast('社員番号を選択してください');
+    const phone4 = loginPhoneInput.value.trim();
+    if (!/^\d{4}$/.test(phone4)) {
+      loginErrorEl.textContent = '携帯番号の下4桁（数字4桁）を入力してください。';
+      loginErrorEl.hidden = false;
       return;
     }
+    const no = findEmployeeByPhone4(phone4);
+    if (!no) {
+      loginErrorEl.textContent = '一致する社員が見つかりません。番号をご確認ください。';
+      loginErrorEl.hidden = false;
+      return;
+    }
+    loginErrorEl.hidden = true;
     applyLogin(no);
+  });
+
+  loginPhoneInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      loginBtn.click();
+    }
   });
 
   function showToast(msg) {
@@ -1042,7 +1070,7 @@
     const entry = {
       id,
       employeeNo,
-      employeeName: employeeDirectory[employeeNo] || '',
+      employeeName: employeeName(employeeNo),
       expenseDate,
       paymentMethod,
       siteName,
