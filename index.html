@@ -607,11 +607,12 @@
   }
 
   function findEmployeeByPhone4(phone4) {
+    const target = phone4.padStart(4, '0');
     const nos = Object.keys(employeeDirectory);
     for (const no of nos) {
       const e = employeeDirectory[no];
       const p = typeof e === 'string' ? '' : (e && e.phone4) || '';
-      if (p && p === phone4) return no;
+      if (p && p.padStart(4, '0') === target) return no;
     }
     return null;
   }
