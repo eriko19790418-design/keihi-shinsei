@@ -164,6 +164,12 @@
   }
   .confirm-btn-secondary { background: var(--accent-soft); color: var(--navy-800); }
   .confirm-btn-danger { background: var(--danger); color: #fff; }
+  .detail-box { max-width: 430px; max-height: 86vh; overflow-y: auto; }
+  .detail-box h3 { margin: 0 0 14px; color: var(--navy-900); }
+  .detail-grid { display: grid; grid-template-columns: 112px 1fr; gap: 8px 10px; margin-bottom: 16px; }
+  .detail-label { color: var(--ink-soft); font-size: 12px; font-weight: 700; }
+  .detail-value { color: var(--ink); font-size: 13px; overflow-wrap: anywhere; }
+  .detail-photo { width: 100%; max-height: 42vh; object-fit: contain; border: 1px solid var(--border); border-radius: 8px; background: #f6f7f8; }
 
   .amount-wrap { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; background: #fff; overflow: hidden; }
   .amount-wrap .yen {
@@ -447,6 +453,7 @@
 
   <section class="entry-card">
     <h2>新規申請</h2>
+    <div id="closing-info" class="ocr-review" style="display:block; margin-bottom:14px;" hidden></div>
     <form id="expense-form">
       <div class="field">
         <label for="employeeNo">社員番号</label>
@@ -543,7 +550,7 @@
     <p id="storage-status" class="employee-hint" style="margin-bottom:12px;"></p>
     <button type="button" id="export-csv-btn" class="directory-toggle" style="margin-bottom:16px;">⬇ CSVで書き出す（経理・Excel用）</button>
     <div id="entries-list"></div>
-    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-16-J（OCR非同期安定版＋摘要3段）</p>
+    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-17-M（当日取消＋営業日締め＋管理者通知）</p>
   </section>
 </div>
 
@@ -556,6 +563,16 @@
     <div class="confirm-actions">
       <button type="button" id="confirm-cancel" class="confirm-btn confirm-btn-secondary">キャンセル</button>
       <button type="button" id="confirm-ok" class="confirm-btn confirm-btn-danger">削除する</button>
+    </div>
+  </div>
+</div>
+<div id="detail-modal" class="confirm-overlay" hidden>
+  <div class="confirm-box detail-box" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+    <h3 id="detail-title">申請内容</h3>
+    <div id="detail-content"></div>
+    <div class="confirm-actions" style="margin-top:16px;">
+      <button type="button" id="detail-cancel-expense" class="confirm-btn confirm-btn-danger" hidden>申請を取り消す</button>
+      <button type="button" id="detail-close" class="confirm-btn confirm-btn-secondary">閉じる</button>
     </div>
   </div>
 </div>
@@ -594,6 +611,11 @@
   const entriesList = document.getElementById('entries-list');
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightbox-img');
+  const detailModal = document.getElementById('detail-modal');
+  const detailContent = document.getElementById('detail-content');
+  const detailCloseBtn = document.getElementById('detail-close');
+  const detailCancelExpenseBtn = document.getElementById('detail-cancel-expense');
+  let detailEntry = null;
   const toastEl = document.getElementById('toast');
 
   const STORAGE_AVAILABLE = (() => {
@@ -640,6 +662,7 @@
   const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwK93Nhg3S5SyEh-3tqARh7I1aUR2ykAzuTDG0I172JqJHlGA8Nx0kC82iRGw31l4xZ/exec';
   const ADMIN_EMPLOYEE_NOS = ['14'];
   let allExpenses = [];
+  let currentClosingInfo = null;
 
   function employeeName(no) {
     const e = employeeDirectory[no];
@@ -1059,6 +1082,97 @@
     return d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0');
   }
 
+  function showEntryDetail(entry) {
+    detailEntry = entry;
+    const fields = [
+      ['社員', (entry.employeeNo || '') + (entry.employeeName ? '：' + entry.employeeName : '')],
+      ['利用日', entry.expenseDate || (entry.timestamp ? formatDate(entry.timestamp) : '')],
+      ['計上月', entry.accountingMonth || ''],
+      ['振り分け項目', entry.siteName || '指定なし'],
+      ['支払方法', entry.paymentMethod || ''],
+      ['店名・内容', entry.category || ''],
+      ['摘要1', entry.memo1 || entry.memo || ''],
+      ['摘要2', entry.memo2 || ''],
+      ['摘要3', entry.memo3 || ''],
+      ['金額', formatYen(entry.amount || 0)],
+      ['8%対象', formatYen(entry.tax8 || 0)],
+      ['10%対象', formatYen(entry.tax10 || 0)]
+    ];
+    const grid = fields.map(([label, value]) =>
+      '<div class="detail-label">' + escapeHtml(label) + '</div>' +
+      '<div class="detail-value">' + escapeHtml(String(value || '－')) + '</div>'
+    ).join('');
+    const photoSrc = entry.photoData || entry.photoUrl || '';
+    const photo = photoSrc
+      ? '<img class="detail-photo" src="' + escapeHtml(photoSrc) + '" alt="領収書">'
+      : '<p class="employee-hint">領収書画像はありません。</p>';
+    detailContent.innerHTML = '<div class="detail-grid">' + grid + '</div>' + photo;
+    const ownEntry = String(entry.employeeNo || '') === String(currentEmployeeNo || '');
+    const processed = String(entry.status || '').trim() === '処理済';
+    const registeredDate = entry.timestamp ? new Date(entry.timestamp) : null;
+    const now = new Date();
+    const sameDay = !!registeredDate &&
+      registeredDate.getFullYear() === now.getFullYear() &&
+      registeredDate.getMonth() === now.getMonth() &&
+      registeredDate.getDate() === now.getDate();
+    detailCancelExpenseBtn.hidden = !(ownEntry && entry.id && !processed && sameDay);
+    detailModal.hidden = false;
+  }
+
+  async function cancelExpense(entry) {
+    if (!entry || !entry.id) {
+      showError('この申請は取消機能追加前のため、画面から取り消せません。');
+      return;
+    }
+    const ok = await showConfirm('この申請を取り消しますか？\nスプレッドシートの行も削除され、管理者へ取消通知が送られます。');
+    if (!ok) return;
+
+    detailCancelExpenseBtn.disabled = true;
+    detailCancelExpenseBtn.textContent = '取消処理中…';
+    const requestId = 'cancel_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+    try {
+      await fetch(SHEET_WEBHOOK_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          type: 'expense_cancel',
+          requestId,
+          id: entry.id,
+          employeeNo: currentEmployeeNo,
+          sourceUrl: location.href
+        })
+      });
+
+      let outcome = null;
+      const started = Date.now();
+      while (Date.now() - started < 20000) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const url = SHEET_WEBHOOK_URL + '?cancelResult=' + encodeURIComponent(requestId) + '&_ts=' + Date.now();
+        const response = await fetch(url, { cache: 'no-store', credentials: 'omit' });
+        if (!response.ok) continue;
+        const json = await response.json();
+        if (json.status === 'pending') continue;
+        outcome = json;
+        break;
+      }
+      if (!outcome) throw new Error('取消結果を確認できませんでした');
+      if (outcome.status !== 'done') throw new Error(outcome.error || '取消できませんでした');
+
+      entries = entries.filter((item) => item.id !== entry.id);
+      allExpenses = allExpenses.filter((item) => item.id !== entry.id);
+      saveJSON('expense-entries', entries);
+      detailModal.hidden = true;
+      showToast('申請を取り消しました');
+      loadEntries();
+    } catch (error) {
+      showError('申請を取り消せませんでした：' + String(error.message || error));
+    } finally {
+      detailCancelExpenseBtn.disabled = false;
+      detailCancelExpenseBtn.textContent = '申請を取り消す';
+    }
+  }
+
   function isAdmin(no) {
     return ADMIN_EMPLOYEE_NOS.includes(no);
   }
@@ -1141,6 +1255,17 @@
         const row = document.createElement('div');
         row.className = 'ledger-row';
         row.style.marginBottom = '10px';
+        row.style.cursor = 'pointer';
+        row.setAttribute('role', 'button');
+        row.setAttribute('tabindex', '0');
+        row.setAttribute('aria-label', '申請内容を表示');
+        row.addEventListener('click', () => showEntryDetail(entry));
+        row.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            showEntryDetail(entry);
+          }
+        });
 
         const thumb = document.createElement('div');
         thumb.className = 'thumb';
@@ -1152,7 +1277,8 @@
           img.src = entry.photoUrl;
         }
         thumb.appendChild(img);
-        thumb.addEventListener('click', () => {
+        thumb.addEventListener('click', (event) => {
+          event.stopPropagation();
           if (isLocalPhoto) {
             lightboxImg.src = entry.photoData;
             lightbox.hidden = false;
@@ -1192,13 +1318,17 @@
           const delBtn = document.createElement('button');
           delBtn.className = 'del-btn';
           delBtn.textContent = '削除';
-          delBtn.addEventListener('click', () => deleteEntry(entry.id));
+          delBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            deleteEntry(entry.id);
+          });
           amountCol.appendChild(delBtn);
         } else if (isOwnEntry) {
           const hideBtn = document.createElement('button');
           hideBtn.className = 'del-btn';
           hideBtn.textContent = '履歴から削除';
-          hideBtn.addEventListener('click', async () => {
+          hideBtn.addEventListener('click', async (event) => {
+            event.stopPropagation();
             const ok = await showConfirm('この申請を自分の履歴から削除しますか？\n（スプレッドシート上の記録は残ります。他の人の画面には影響しません。）');
             if (!ok) return;
             hideEntryForSelf(entry);
@@ -1245,6 +1375,9 @@
       tax8: entry.tax8 || 0,
       tax10: entry.tax10 || 0,
       photoData: entry.photoData || '',
+      id: entry.id,
+      timestamp: entry.timestamp,
+      accountingMonth: currentClosingInfo ? currentClosingInfo.accountingMonth : '',
       notifyAdmin: true,
       sourceUrl: location.href
     });
@@ -1267,6 +1400,16 @@
       }
       if (Array.isArray(data.expenses)) {
         allExpenses = data.expenses;
+      }
+      if (data.closingInfo && typeof data.closingInfo === 'object') {
+        currentClosingInfo = data.closingInfo;
+        const closingEl = document.getElementById('closing-info');
+        if (closingEl) {
+          closingEl.hidden = false;
+          closingEl.innerHTML =
+            '<strong>今月の経費締め日：' + escapeHtml(data.closingInfo.closingDate || '－') + '</strong><br>' +
+            '<span class="employee-hint">本日の申請は ' + escapeHtml(data.closingInfo.accountingMonth || '－') + ' 計上です。締め日後は翌月分になります。</span>';
+        }
       }
       renderDirectory();
       renderSiteOptions();
@@ -1362,6 +1505,11 @@
   }
 
   lightbox.addEventListener('click', () => { lightbox.hidden = true; });
+  detailCloseBtn.addEventListener('click', () => { detailModal.hidden = true; });
+  detailCancelExpenseBtn.addEventListener('click', () => cancelExpense(detailEntry));
+  detailModal.addEventListener('click', (event) => {
+    if (event.target === detailModal) detailModal.hidden = true;
+  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
