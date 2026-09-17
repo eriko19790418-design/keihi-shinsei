@@ -551,7 +551,7 @@
     <p id="storage-status" class="employee-hint" style="margin-bottom:12px;"></p>
     <button type="button" id="export-csv-btn" class="directory-toggle" style="margin-bottom:16px;">⬇ CSVで書き出す（経理・Excel用）</button>
     <div id="entries-list"></div>
-    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-17-S（原本貼付台紙1枚印刷修正）</p>
+    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-17-T（計上月・携帯印刷修正）</p>
   </section>
 </div>
 
@@ -1108,6 +1108,22 @@
     const d = new Date(iso);
     return d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0');
   }
+  function formatAccountingMonth(value) {
+    const text = String(value || '').trim();
+    if (!text) return '';
+    const ja = text.match(/^(\d{4})年\s*(\d{1,2})月$/);
+    if (ja) return ja[1] + '年' + Number(ja[2]) + '月';
+    const ym = text.match(/^(\d{4})[-\/]\s*(\d{1,2})$/);
+    if (ym) return ym[1] + '年' + Number(ym[2]) + '月';
+    const d = new Date(text);
+    if (isNaN(d.getTime())) return text;
+    const parts = new Intl.DateTimeFormat('ja-JP', {
+      timeZone: 'Asia/Tokyo', year: 'numeric', month: 'numeric'
+    }).formatToParts(d);
+    const year = parts.find((part) => part.type === 'year');
+    const month = parts.find((part) => part.type === 'month');
+    return year && month ? year.value + '年' + Number(month.value) + '月' : text;
+  }
 
   function showEntryDetail(entry) {
     detailEntry = entry;
@@ -1115,7 +1131,7 @@
       ['社員', (entry.employeeNo || '') + (entry.employeeName ? '：' + entry.employeeName : '')],
       ['利用日', entry.expenseDate || (entry.timestamp ? formatDate(entry.timestamp) : '')],
       ['状態', entry.status || '下書き'],
-      ['計上月', entry.accountingMonth || ''],
+      ['計上月', formatAccountingMonth(entry.accountingMonth)],
       ['振り分け項目', entry.siteName || '指定なし'],
       ['支払方法', entry.paymentMethod || ''],
       ['店名・内容', entry.category || ''],
@@ -1167,7 +1183,7 @@
       ['社員', employee],
       ['申請日時', appliedAt],
       ['利用日', entry.expenseDate || ''],
-      ['計上月', entry.accountingMonth || ''],
+      ['計上月', formatAccountingMonth(entry.accountingMonth)],
       ['振り分け項目', entry.siteName || '指定なし'],
       ['支払方法', entry.paymentMethod || ''],
       ['店名・内容', entry.category || ''],
@@ -1181,7 +1197,7 @@
 
     printWindow.document.open();
     printWindow.document.write('<!doctype html><html lang="ja"><head><meta charset="utf-8"><title>領収書原本貼付台紙</title>' +
-      '<style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}html,body{height:268mm;overflow:hidden}body{font-family:-apple-system,BlinkMacSystemFont,"Yu Gothic",sans-serif;color:#111;margin:0;display:flex;flex-direction:column}h1{text-align:center;font-size:20px;margin:0 0 8px}.note{text-align:right;font-size:11px;margin:0 0 5px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #333;padding:4px 7px;vertical-align:top}th{width:28%;background:#f2f2f2;text-align:left}.mount{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#666;font-size:16px}.bottom-note{font-size:11px;color:#666;text-align:center;margin:0 0 4px}.footer{font-size:10px;color:#555;margin:0;text-align:right}@media print{.no-print{display:none}}</style>' +
+      '<style>@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,"Yu Gothic",sans-serif;color:#111}h1{text-align:center;font-size:19px;margin:0 0 6px}.note{text-align:right;font-size:10px;margin:0 0 4px}table{width:100%;border-collapse:collapse;font-size:11px;page-break-inside:avoid}th,td{border:1px solid #333;padding:3px 6px;vertical-align:top}th{width:28%;background:#f2f2f2;text-align:left}.mount{height:120mm;display:flex;align-items:center;justify-content:center;text-align:center;color:#666;font-size:16px;page-break-inside:avoid}.bottom-note{font-size:10px;color:#666;text-align:center;margin:0 0 3px;page-break-inside:avoid}.footer{font-size:9px;color:#555;margin:0;text-align:right;page-break-inside:avoid}@media print{html,body{height:auto;overflow:visible}.no-print{display:none}}</style>' +
       '</head><body><h1>領収書原本貼付台紙</h1><p class="note">A4・1申請1枚</p><table>' + tableRows +
       '</table><div class="mount">領収書原本貼付欄</div>' +
       '<p class="bottom-note">文字や金額が隠れないように貼付してください</p><p class="footer">社員経費申請システム</p></body></html>');
@@ -1536,7 +1552,7 @@
           closingEl.hidden = false;
           closingEl.innerHTML =
             '<strong>今月の経費締め日：' + escapeHtml(data.closingInfo.closingDate || '－') + '</strong><br>' +
-            '<span class="employee-hint">本日の申請は ' + escapeHtml(data.closingInfo.accountingMonth || '－') + ' 計上です。締め日後は翌月分になります。</span>';
+            '<span class="employee-hint">本日の申請は ' + escapeHtml(formatAccountingMonth(data.closingInfo.accountingMonth) || '－') + ' 計上です。締め日後は翌月分になります。</span>';
         }
       }
       renderDirectory();
