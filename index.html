@@ -551,7 +551,7 @@
     <p id="storage-status" class="employee-hint" style="margin-bottom:12px;"></p>
     <button type="button" id="export-csv-btn" class="directory-toggle" style="margin-bottom:16px;">⬇ CSVで書き出す（経理・Excel用）</button>
     <div id="entries-list"></div>
-    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-17-P（金額カンマ表示）</p>
+    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-17-R（原本貼付台紙レイアウト修正）</p>
   </section>
 </div>
 
@@ -571,7 +571,8 @@
   <div class="confirm-box detail-box" role="dialog" aria-modal="true" aria-labelledby="detail-title">
     <h3 id="detail-title">申請内容</h3>
     <div id="detail-content"></div>
-    <div class="confirm-actions" style="margin-top:16px;">
+    <div class="confirm-actions" style="margin-top:16px; flex-wrap:wrap;">
+      <button type="button" id="detail-print-sheet" class="confirm-btn mini-btn-primary" style="flex-basis:100%;" hidden>原本貼付台紙を印刷</button>
       <button type="button" id="detail-submit-expense" class="confirm-btn mini-btn-primary" hidden>申請する</button>
       <button type="button" id="detail-cancel-expense" class="confirm-btn confirm-btn-danger" hidden>申請を取り消す</button>
       <button type="button" id="detail-close" class="confirm-btn confirm-btn-secondary">閉じる</button>
@@ -616,6 +617,7 @@
   const detailModal = document.getElementById('detail-modal');
   const detailContent = document.getElementById('detail-content');
   const detailCloseBtn = document.getElementById('detail-close');
+  const detailPrintSheetBtn = document.getElementById('detail-print-sheet');
   const detailSubmitExpenseBtn = document.getElementById('detail-submit-expense');
   const detailCancelExpenseBtn = document.getElementById('detail-cancel-expense');
   let detailEntry = null;
@@ -1144,8 +1146,48 @@
       registeredDate.getMonth() === now.getMonth() &&
       registeredDate.getDate() === now.getDate();
     detailSubmitExpenseBtn.hidden = !(ownEntry && entry.id && isDraft);
+    detailPrintSheetBtn.hidden = !isSubmitted;
     detailCancelExpenseBtn.hidden = !(ownEntry && entry.id && isSubmitted && sameDay);
     detailModal.hidden = false;
+  }
+
+  function printReceiptMountSheet(entry) {
+    if (!entry) return;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      showError('印刷画面を開けませんでした。ブラウザのポップアップを許可してください。');
+      return;
+    }
+
+    const employee = (entry.employeeNo || '') + (entry.employeeName ? '：' + entry.employeeName : '');
+    const memo = [entry.memo1 || entry.memo || '', entry.memo2 || '', entry.memo3 || ''].filter(Boolean).join(' / ');
+    const appliedAt = entry.timestamp ? new Date(entry.timestamp).toLocaleString('ja-JP') : '';
+    const rows = [
+      ['申請番号', entry.id || ''],
+      ['社員', employee],
+      ['申請日時', appliedAt],
+      ['利用日', entry.expenseDate || ''],
+      ['計上月', entry.accountingMonth || ''],
+      ['振り分け項目', entry.siteName || '指定なし'],
+      ['支払方法', entry.paymentMethod || ''],
+      ['店名・内容', entry.category || ''],
+      ['摘要', memo],
+      ['金額', formatYen(entry.amount || 0)],
+      ['税区分', '8%対象 ' + formatYen(entry.tax8 || 0) + ' ／ 10%対象 ' + formatYen(entry.tax10 || 0)]
+    ];
+    const tableRows = rows.map(([label, value]) =>
+      '<tr><th>' + escapeHtml(label) + '</th><td>' + escapeHtml(String(value || '－')) + '</td></tr>'
+    ).join('');
+
+    printWindow.document.open();
+    printWindow.document.write('<!doctype html><html lang="ja"><head><meta charset="utf-8"><title>領収書原本貼付台紙</title>' +
+      '<style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Yu Gothic",sans-serif;color:#111;margin:0;min-height:273mm;display:flex;flex-direction:column}h1{text-align:center;font-size:20px;margin:0 0 10px}.note{text-align:right;font-size:11px;margin:0 0 6px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #333;padding:5px 7px;vertical-align:top}th{width:28%;background:#f2f2f2;text-align:left}.mount{flex:1;min-height:125mm;display:flex;align-items:center;justify-content:center;text-align:center;color:#666;font-size:16px}.bottom-note{font-size:11px;color:#666;text-align:center;margin:0 0 6px}.footer{font-size:10px;color:#555;margin:0;text-align:right}@media print{.no-print{display:none}}</style>' +
+      '</head><body><h1>領収書原本貼付台紙</h1><p class="note">A4・1申請1枚</p><table>' + tableRows +
+      '</table><div class="mount">領収書原本貼付欄</div>' +
+      '<p class="bottom-note">文字や金額が隠れないように貼付してください</p><p class="footer">社員経費申請システム</p></body></html>');
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => printWindow.print(), 300);
   }
 
   async function submitExpense(entry) {
@@ -1592,6 +1634,7 @@
 
   lightbox.addEventListener('click', () => { lightbox.hidden = true; });
   detailCloseBtn.addEventListener('click', () => { detailModal.hidden = true; });
+  detailPrintSheetBtn.addEventListener('click', () => printReceiptMountSheet(detailEntry));
   detailSubmitExpenseBtn.addEventListener('click', () => submitExpense(detailEntry));
   detailCancelExpenseBtn.addEventListener('click', () => cancelExpense(detailEntry));
   detailModal.addEventListener('click', (event) => {
