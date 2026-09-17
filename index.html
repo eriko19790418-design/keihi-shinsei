@@ -142,6 +142,7 @@
     z-index: 70;
   }
   .confirm-overlay[hidden] { display: none !important; }
+  #confirm-modal { z-index: 80; }
   .confirm-box {
     background: #fff;
     border-radius: 12px;
@@ -550,7 +551,7 @@
     <p id="storage-status" class="employee-hint" style="margin-bottom:12px;"></p>
     <button type="button" id="export-csv-btn" class="directory-toggle" style="margin-bottom:16px;">⬇ CSVで書き出す（経理・Excel用）</button>
     <div id="entries-list"></div>
-    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-17-N（下書き→申請＋当日取消＋締め日）</p>
+    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-17-O（申請確認画面修正）</p>
   </section>
 </div>
 
@@ -826,8 +827,9 @@
     }
   }
 
-  function showConfirm(message) {
+  function showConfirm(message, okLabel = '削除する') {
     confirmMessage.textContent = message;
+    confirmOkBtn.textContent = okLabel;
     confirmModal.hidden = false;
     return new Promise((resolve) => {
       function cleanup(result) {
@@ -1130,7 +1132,7 @@
       showError('この下書きには申請IDがありません。');
       return;
     }
-    const ok = await showConfirm('この内容で経理担当へ申請しますか？\n申請すると経理担当へメールが届きます。');
+    const ok = await showConfirm('この内容で経理担当へ申請しますか？\n申請すると経理担当へメールが届きます。', '申請する');
     if (!ok) return;
 
     detailSubmitExpenseBtn.disabled = true;
@@ -1186,7 +1188,7 @@
       showError('この申請は取消機能追加前のため、画面から取り消せません。');
       return;
     }
-    const ok = await showConfirm('この申請を取り消しますか？\nスプレッドシートの行も削除され、管理者へ取消通知が送られます。');
+    const ok = await showConfirm('この申請を取り消しますか？\nスプレッドシートの行も削除され、管理者へ取消通知が送られます。', '申請を取り消す');
     if (!ok) return;
 
     detailCancelExpenseBtn.disabled = true;
@@ -1392,7 +1394,7 @@
           hideBtn.textContent = '履歴から削除';
           hideBtn.addEventListener('click', async (event) => {
             event.stopPropagation();
-            const ok = await showConfirm('この申請を自分の履歴から削除しますか？\n（スプレッドシート上の記録は残ります。他の人の画面には影響しません。）');
+            const ok = await showConfirm('この申請を自分の履歴から削除しますか？\n（スプレッドシート上の記録は残ります。他の人の画面には影響しません。）', '履歴から削除');
             if (!ok) return;
             hideEntryForSelf(entry);
             showToast('履歴から削除しました');
