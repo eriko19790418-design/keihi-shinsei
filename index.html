@@ -497,7 +497,7 @@
         <label for="amount">金額</label>
         <div class="amount-wrap">
           <span class="yen">¥</span>
-          <input type="number" id="amount" min="0" step="1" inputmode="numeric" placeholder="0" required>
+          <input type="text" id="amount" inputmode="numeric" pattern="[0-9,]*" placeholder="0" required>
         </div>
       </div>
       <div class="field">
@@ -528,11 +528,11 @@
           </div>
           <div class="field">
             <label for="tax8Amount">8%対象金額</label>
-            <input type="number" id="tax8Amount" min="0" step="1" inputmode="numeric" placeholder="0">
+            <input type="text" id="tax8Amount" inputmode="numeric" pattern="[0-9,]*" placeholder="0">
           </div>
           <div class="field">
             <label for="tax10Amount">10%対象金額</label>
-            <input type="number" id="tax10Amount" min="0" step="1" inputmode="numeric" placeholder="0">
+            <input type="text" id="tax10Amount" inputmode="numeric" pattern="[0-9,]*" placeholder="0">
           </div>
           <div class="field ocr-full">
             <button type="button" id="ocr-retry-btn" class="mini-btn mini-btn-secondary" style="width:100%;">🔄 レシートをもう一度読み取る</button>
@@ -551,7 +551,7 @@
     <p id="storage-status" class="employee-hint" style="margin-bottom:12px;"></p>
     <button type="button" id="export-csv-btn" class="directory-toggle" style="margin-bottom:16px;">⬇ CSVで書き出す（経理・Excel用）</button>
     <div id="entries-list"></div>
-    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-17-O（申請確認画面修正）</p>
+    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-17-P（金額カンマ表示）</p>
   </section>
 </div>
 
@@ -997,7 +997,7 @@
         filledAny = true;
       }
       if (result.amount != null && !isNaN(Number(result.amount))) {
-        amountInput.value = Math.round(Number(result.amount));
+        amountInput.value = formatMoneyValue(Math.round(Number(result.amount)));
         filledAny = true;
       }
       if (result.date && /^\d{4}-\d{2}-\d{2}$/.test(result.date)) {
@@ -1008,8 +1008,8 @@
       const tax10 = Number(result.tax10) || 0;
       lastOcrTax8 = tax8;
       lastOcrTax10 = tax10;
-      tax8AmountInput.value = tax8 > 0 ? Math.round(tax8) : '';
-      tax10AmountInput.value = tax10 > 0 ? Math.round(tax10) : '';
+      tax8AmountInput.value = tax8 > 0 ? formatMoneyValue(Math.round(tax8)) : '';
+      tax10AmountInput.value = tax10 > 0 ? formatMoneyValue(Math.round(tax10)) : '';
       if (tax8 > 0 && tax10 > 0) taxRateInput.value = 'mixed';
       else if (tax8 > 0) taxRateInput.value = '8';
       else if (tax10 > 0) taxRateInput.value = '10';
@@ -1047,28 +1047,49 @@
     lastOcrStoreName = storeNameInput.value.trim();
   });
 
+  function parseMoneyValue(value) {
+    const normalized = String(value || '').replace(/[０-９]/g, (digit) =>
+      String.fromCharCode(digit.charCodeAt(0) - 0xFEE0)
+    );
+    const digits = normalized.replace(/[^0-9]/g, '');
+    return digits ? Number(digits) : 0;
+  }
+
+  function formatMoneyValue(value) {
+    const amount = parseMoneyValue(value);
+    return amount ? amount.toLocaleString('ja-JP') : '';
+  }
+
+  function applyMoneyInputFormat(input) {
+    input.value = formatMoneyValue(input.value);
+  }
+
+  amountInput.addEventListener('input', () => applyMoneyInputFormat(amountInput));
+
   tax8AmountInput.addEventListener('input', () => {
-    lastOcrTax8 = Number(tax8AmountInput.value) || 0;
+    applyMoneyInputFormat(tax8AmountInput);
+    lastOcrTax8 = parseMoneyValue(tax8AmountInput.value);
   });
 
   tax10AmountInput.addEventListener('input', () => {
-    lastOcrTax10 = Number(tax10AmountInput.value) || 0;
+    applyMoneyInputFormat(tax10AmountInput);
+    lastOcrTax10 = parseMoneyValue(tax10AmountInput.value);
   });
 
   taxRateInput.addEventListener('change', () => {
-    const total = Number(amountInput.value) || 0;
+    const total = parseMoneyValue(amountInput.value);
     if (taxRateInput.value === '8') {
-      if (!tax8AmountInput.value && total) tax8AmountInput.value = total;
+      if (!tax8AmountInput.value && total) tax8AmountInput.value = formatMoneyValue(total);
       tax10AmountInput.value = '';
     } else if (taxRateInput.value === '10') {
-      if (!tax10AmountInput.value && total) tax10AmountInput.value = total;
+      if (!tax10AmountInput.value && total) tax10AmountInput.value = formatMoneyValue(total);
       tax8AmountInput.value = '';
     } else if (taxRateInput.value === 'unknown') {
       tax8AmountInput.value = '';
       tax10AmountInput.value = '';
     }
-    lastOcrTax8 = Number(tax8AmountInput.value) || 0;
-    lastOcrTax10 = Number(tax10AmountInput.value) || 0;
+    lastOcrTax8 = parseMoneyValue(tax8AmountInput.value);
+    lastOcrTax10 = parseMoneyValue(tax10AmountInput.value);
   });
 
   if (ocrRetryBtn) {
@@ -1589,11 +1610,11 @@
     const memo2 = memo2Input.value.trim();
     const memo3 = memo3Input.value.trim();
     const memo = [memo1, memo2, memo3].filter(Boolean).join(' / ');
-    const amount = amountInput.value;
+    const amount = parseMoneyValue(amountInput.value);
     const category = storeNameInput.value.trim() || lastOcrStoreName || '経費';
     lastOcrStoreName = storeNameInput.value.trim();
-    lastOcrTax8 = Number(tax8AmountInput.value) || 0;
-    lastOcrTax10 = Number(tax10AmountInput.value) || 0;
+    lastOcrTax8 = parseMoneyValue(tax8AmountInput.value);
+    lastOcrTax10 = parseMoneyValue(tax10AmountInput.value);
 
     if (!employeeNo || !expenseDate || !paymentMethod || !amount) {
       showError('社員番号・利用日・支払方法・金額を入力してください。');
@@ -1621,7 +1642,7 @@
       memo1,
       memo2,
       memo3,
-      amount: Number(amount),
+      amount,
       tax8: lastOcrTax8 || 0,
       tax10: lastOcrTax10 || 0,
       photoData: pendingPhoto,
