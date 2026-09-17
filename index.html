@@ -539,7 +539,7 @@
           </div>
         </div>
       </div>
-      <button type="submit" class="submit-btn">この内容で登録する</button>
+      <button type="submit" class="submit-btn">下書き登録する</button>
       <p id="form-error" class="form-error" hidden></p>
     </form>
   </section>
@@ -550,7 +550,7 @@
     <p id="storage-status" class="employee-hint" style="margin-bottom:12px;"></p>
     <button type="button" id="export-csv-btn" class="directory-toggle" style="margin-bottom:16px;">⬇ CSVで書き出す（経理・Excel用）</button>
     <div id="entries-list"></div>
-    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-17-M（当日取消＋営業日締め＋管理者通知）</p>
+    <p style="text-align:center; font-size:11px; color:var(--ink-soft); margin-top:24px;">バージョン: 2026-09-17-N（下書き→申請＋当日取消＋締め日）</p>
   </section>
 </div>
 
@@ -571,6 +571,7 @@
     <h3 id="detail-title">申請内容</h3>
     <div id="detail-content"></div>
     <div class="confirm-actions" style="margin-top:16px;">
+      <button type="button" id="detail-submit-expense" class="confirm-btn mini-btn-primary" hidden>申請する</button>
       <button type="button" id="detail-cancel-expense" class="confirm-btn confirm-btn-danger" hidden>申請を取り消す</button>
       <button type="button" id="detail-close" class="confirm-btn confirm-btn-secondary">閉じる</button>
     </div>
@@ -614,6 +615,7 @@
   const detailModal = document.getElementById('detail-modal');
   const detailContent = document.getElementById('detail-content');
   const detailCloseBtn = document.getElementById('detail-close');
+  const detailSubmitExpenseBtn = document.getElementById('detail-submit-expense');
   const detailCancelExpenseBtn = document.getElementById('detail-cancel-expense');
   let detailEntry = null;
   const toastEl = document.getElementById('toast');
@@ -1035,7 +1037,7 @@
       ocrInProgress = false;
       const submitBtn = form.querySelector('.submit-btn');
       submitBtn.disabled = false;
-      submitBtn.textContent = 'この内容で登録する';
+      submitBtn.textContent = '下書き登録する';
     }
   }
 
@@ -1087,6 +1089,7 @@
     const fields = [
       ['社員', (entry.employeeNo || '') + (entry.employeeName ? '：' + entry.employeeName : '')],
       ['利用日', entry.expenseDate || (entry.timestamp ? formatDate(entry.timestamp) : '')],
+      ['状態', entry.status || '下書き'],
       ['計上月', entry.accountingMonth || ''],
       ['振り分け項目', entry.siteName || '指定なし'],
       ['支払方法', entry.paymentMethod || ''],
@@ -1108,15 +1111,74 @@
       : '<p class="employee-hint">領収書画像はありません。</p>';
     detailContent.innerHTML = '<div class="detail-grid">' + grid + '</div>' + photo;
     const ownEntry = String(entry.employeeNo || '') === String(currentEmployeeNo || '');
-    const processed = String(entry.status || '').trim() === '処理済';
+    const status = String(entry.status || '').trim();
+    const isDraft = status === '下書き';
+    const isSubmitted = status === '申請済' || status === '未処理';
     const registeredDate = entry.timestamp ? new Date(entry.timestamp) : null;
     const now = new Date();
     const sameDay = !!registeredDate &&
       registeredDate.getFullYear() === now.getFullYear() &&
       registeredDate.getMonth() === now.getMonth() &&
       registeredDate.getDate() === now.getDate();
-    detailCancelExpenseBtn.hidden = !(ownEntry && entry.id && !processed && sameDay);
+    detailSubmitExpenseBtn.hidden = !(ownEntry && entry.id && isDraft);
+    detailCancelExpenseBtn.hidden = !(ownEntry && entry.id && isSubmitted && sameDay);
     detailModal.hidden = false;
+  }
+
+  async function submitExpense(entry) {
+    if (!entry || !entry.id) {
+      showError('この下書きには申請IDがありません。');
+      return;
+    }
+    const ok = await showConfirm('この内容で経理担当へ申請しますか？\n申請すると経理担当へメールが届きます。');
+    if (!ok) return;
+
+    detailSubmitExpenseBtn.disabled = true;
+    detailSubmitExpenseBtn.textContent = '申請中…';
+    const requestId = 'submit_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+    try {
+      await fetch(SHEET_WEBHOOK_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          type: 'expense_submit',
+          requestId,
+          id: entry.id,
+          employeeNo: currentEmployeeNo,
+          sourceUrl: location.href
+        })
+      });
+
+      let outcome = null;
+      const started = Date.now();
+      while (Date.now() - started < 20000) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const url = SHEET_WEBHOOK_URL + '?submitResult=' + encodeURIComponent(requestId) + '&_ts=' + Date.now();
+        const response = await fetch(url, { cache: 'no-store', credentials: 'omit' });
+        if (!response.ok) continue;
+        const json = await response.json();
+        if (json.status === 'pending') continue;
+        outcome = json;
+        break;
+      }
+      if (!outcome) throw new Error('申請結果を確認できませんでした');
+      if (outcome.status !== 'done') throw new Error(outcome.error || '申請できませんでした');
+
+      [entries, allExpenses].forEach((list) => {
+        const found = list.find((item) => item.id === entry.id);
+        if (found) found.status = '申請済';
+      });
+      saveJSON('expense-entries', entries);
+      detailModal.hidden = true;
+      showToast('経理担当へ申請しました');
+      await fetchSharedDirectories();
+    } catch (error) {
+      showError('申請できませんでした：' + String(error.message || error));
+    } finally {
+      detailSubmitExpenseBtn.disabled = false;
+      detailSubmitExpenseBtn.textContent = '申請する';
+    }
   }
 
   async function cancelExpense(entry) {
@@ -1302,9 +1364,10 @@
         if (tax8Val > 0) taxParts.push('8%対象:' + formatYen(tax8Val));
         if (tax10Val > 0) taxParts.push('10%対象:' + formatYen(tax10Val));
         const taxLine = taxParts.length ? '<p class="sub">' + taxParts.join(' ・ ') + '</p>' : '';
+        const statusLine = '<p class="sub">状態：' + escapeHtml(entry.status || '下書き') + '</p>';
         meta.innerHTML =
           '<p class="category">' + escapeHtml(entry.category) + (entry.paymentMethod ? ' ・ ' + escapeHtml(entry.paymentMethod) : '') + '</p>' +
-          '<p class="sub">' + subLine + '</p>' + taxLine;
+          '<p class="sub">' + subLine + '</p>' + statusLine + taxLine;
 
         const amountCol = document.createElement('div');
         amountCol.className = 'amount-col';
@@ -1360,7 +1423,7 @@
 
   function sendToSheet(entry) {
     postToSheet({
-      type: 'expense',
+      type: 'expense_draft',
       employeeNo: entry.employeeNo,
       employeeName: entry.employeeName || '',
       expenseDate: entry.expenseDate || '',
@@ -1378,7 +1441,7 @@
       id: entry.id,
       timestamp: entry.timestamp,
       accountingMonth: currentClosingInfo ? currentClosingInfo.accountingMonth : '',
-      notifyAdmin: true,
+      notifyAdmin: false,
       sourceUrl: location.href
     });
   }
@@ -1506,6 +1569,7 @@
 
   lightbox.addEventListener('click', () => { lightbox.hidden = true; });
   detailCloseBtn.addEventListener('click', () => { detailModal.hidden = true; });
+  detailSubmitExpenseBtn.addEventListener('click', () => submitExpense(detailEntry));
   detailCancelExpenseBtn.addEventListener('click', () => cancelExpense(detailEntry));
   detailModal.addEventListener('click', (event) => {
     if (event.target === detailModal) detailModal.hidden = true;
@@ -1559,7 +1623,9 @@
       tax8: lastOcrTax8 || 0,
       tax10: lastOcrTax10 || 0,
       photoData: pendingPhoto,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      status: '下書き',
+      accountingMonth: currentClosingInfo ? currentClosingInfo.accountingMonth : ''
     };
 
     try {
@@ -1578,14 +1644,14 @@
       pendingPhoto = null;
       receiptPreview.classList.remove('has-image');
       receiptPreview.textContent = 'タップして撮影・選択';
-      showToast('登録しました');
+      showToast('下書きを登録しました。履歴から内容を確認して申請してください。');
       loadEntries();
       setTimeout(() => { fetchSharedDirectories(); }, 2500);
     } catch (err) {
       showError('保存に失敗しました。もう一度お試しください。（' + (err && err.message ? err.message : '不明なエラー') + '）');
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'この内容で登録する';
+      submitBtn.textContent = '下書き登録する';
     }
   });
 
