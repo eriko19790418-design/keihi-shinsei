@@ -1,0 +1,929 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><base target="_top"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>アニマ経費申請</title>
+<style>
+  :root {
+    --bg: #f4f8fc;
+    --navy-900: #1c3a5c;
+    --navy-800: #2f7ab5;
+    --navy-700: #4a92cc;
+    --accent: #2f9e6f;
+    --accent-soft: #e6f6ee;
+    --card: #ffffff;
+    --border: #e2eaf2;
+    --ink: #26313d;
+    --ink-soft: #72808f;
+    --danger: #c0483c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Noto Sans JP', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .app { max-width: 480px; margin: 0 auto; padding: 0 16px 48px; }
+
+  .header-band {
+    background: linear-gradient(160deg, #ffffff, #eaf3fb);
+    border: 1px solid var(--border);
+    margin: 0 -16px 24px;
+    padding: 26px 16px 22px;
+    border-radius: 0 0 20px 20px;
+    border-top: none;
+    box-shadow: 0 2px 10px rgba(47,122,181,0.08);
+  }
+  .chip {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--navy-800);
+    background: var(--accent-soft);
+    padding: 4px 11px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .header-band h1 {
+    font-size: 21px;
+    font-weight: 800;
+    color: var(--navy-900);
+    margin: 0 0 6px;
+    letter-spacing: 0.01em;
+  }
+  .header-band .subtitle { margin: 0; font-size: 13px; color: var(--ink-soft); }
+
+  h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy-900);
+    margin: 0 0 14px;
+    padding-left: 11px;
+    border-left: 3px solid var(--accent);
+  }
+
+  .entry-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 16px 20px;
+    box-shadow: 0 2px 10px rgba(19,37,61,0.06);
+    margin-bottom: 26px;
+  }
+
+  .field { margin-bottom: 15px; }
+  .field label { display: block; font-size: 12.5px; font-weight: 500; color: var(--ink-soft); margin-bottom: 5px; }
+  .field input[type="text"],
+  .field input[type="number"],
+  .field textarea,
+  .field select {
+    width: 100%;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 16px;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+  }
+  .field select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%);
+    background-position: calc(100% - 18px) center, calc(100% - 13px) center;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  .add-category-btn {
+    margin-top: 7px;
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 2px 0;
+    cursor: pointer;
+  }
+  .update-notice { border: 1px solid #9abfe4; border-radius: 12px; background: #edf6ff; padding: 14px; margin: 10px 0 14px; }
+  .update-notice h2 { font-size: 15px; margin: 0 0 6px; color: var(--navy-900); }
+  .update-notice p { font-size: 13px; line-height: 1.6; margin: 0 0 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .update-notice .notice-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .update-notice .notice-update { border: 0; border-radius: 8px; padding: 9px 12px; background: var(--navy-800); color: #fff; font-weight: 700; cursor: pointer; }
+  .update-notice .notice-dismiss { border: 0; background: transparent; color: var(--navy-800); padding: 8px; cursor: pointer; }
+  .new-category-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .mini-btn {
+    flex: 1;
+    border: none;
+    border-radius: 7px;
+    padding: 9px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+  }
+  .mini-btn-primary { background: var(--navy-800); color: #fff; }
+  .mini-btn-primary:active { background: var(--navy-900); }
+  .mini-btn-secondary { background: var(--accent-soft); color: var(--navy-800); }
+
+  .confirm-overlay {
+    position: fixed; inset: 0; background: rgba(15,22,32,0.5);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+    z-index: 70;
+  }
+  .confirm-overlay[hidden] { display: none !important; }
+  #confirm-modal { z-index: 80; }
+  .confirm-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 18px;
+    max-width: 320px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(15,22,32,0.25);
+  }
+  .confirm-box p { margin: 0 0 16px; font-size: 14px; color: var(--ink); }
+  .confirm-actions { display: flex; gap: 10px; }
+  .confirm-btn {
+    flex: 1;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 13.5px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+  }
+  .confirm-btn-secondary { background: var(--accent-soft); color: var(--navy-800); }
+  .confirm-btn-danger { background: var(--danger); color: #fff; }
+  .detail-box { max-width: 430px; max-height: 86vh; overflow-y: auto; }
+  .detail-box h3 { margin: 0 0 14px; color: var(--navy-900); }
+  .detail-grid { display: grid; grid-template-columns: 112px 1fr; gap: 8px 10px; margin-bottom: 16px; }
+  .detail-label { color: var(--ink-soft); font-size: 12px; font-weight: 700; }
+  .detail-value { color: var(--ink); font-size: 13px; overflow-wrap: anywhere; }
+  .detail-photo { width: 100%; max-height: 42vh; object-fit: contain; border: 1px solid var(--border); border-radius: 8px; background: #f6f7f8; }
+
+  .amount-wrap { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; background: #fff; overflow: hidden; }
+  .amount-wrap .yen {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    padding: 0 10px;
+    color: var(--navy-800);
+    border-right: 1px solid var(--border);
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    background: var(--accent-soft);
+  }
+  .amount-wrap input {
+    border: none !important;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: right;
+  }
+  .amount-wrap input:focus { box-shadow: none !important; }
+
+  .receipt-upload { position: relative; }
+  .receipt-upload input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .receipt-preview {
+    border: 1.5px dashed var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--ink-soft);
+    background: #f7f9fb;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .receipt-preview.has-image { padding: 0; border-style: solid; }
+  .receipt-preview img { width: 100%; max-height: 220px; object-fit: contain; display: block; background: #eee; }
+
+  .submit-btn {
+    width: 100%;
+    background: var(--navy-800);
+    color: #fdfcf7;
+    border: none;
+    border-radius: 8px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    letter-spacing: 0.02em;
+    margin-top: 4px;
+    cursor: pointer;
+  }
+  .submit-btn:active { background: var(--navy-900); }
+
+  .form-error {
+    color: var(--danger);
+    font-size: 12.5px;
+    margin: 8px 0 0;
+  }
+
+  #entries-list { display: flex; flex-direction: column; gap: 10px; }
+  .empty-state {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 26px 10px;
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.5);
+  }
+
+  .ledger-row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 12px;
+    display: grid;
+    grid-template-columns: 52px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    box-shadow: 0 1px 4px rgba(19,37,61,0.04);
+  }
+  .ledger-row .thumb {
+    width: 52px; height: 52px; border-radius: 7px; overflow: hidden;
+    background: #eee; border: 1px solid var(--border); cursor: pointer;
+  }
+  .ledger-row .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ledger-row .meta { min-width: 0; }
+  .ledger-row .category { font-weight: 700; font-size: 14px; margin: 0 0 3px; color: var(--navy-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ledger-row .sub { font-size: 12px; color: var(--ink-soft); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ledger-row .amount-col { text-align: right; }
+  .ledger-row .amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--navy-800);
+    white-space: nowrap;
+  }
+  .ledger-row .del-btn {
+    display: block;
+    margin-top: 6px;
+    border: none;
+    background: none;
+    color: var(--danger);
+    font-size: 11.5px;
+    cursor: pointer;
+    padding: 2px 0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .lightbox {
+    position: fixed; inset: 0; background: rgba(15,22,32,0.86);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+    z-index: 50;
+  }
+  .lightbox[hidden] { display: none !important; }
+  .lightbox img { max-width: 100%; max-height: 100%; border-radius: 6px; }
+
+  .toast {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--navy-900);
+    color: #fdfcf7;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    z-index: 60;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+/* 大きな利用日入力 */
+#expenseDate {
+  width: 100%;
+  max-width: 100%;
+  min-height: 62px;
+  box-sizing: border-box;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  -webkit-appearance: none;
+  appearance: none;
+}
+#expenseDate:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.employee-hint { font-size: 12.5px; margin: 6px 0 0; color: var(--ink-soft); }
+.employee-hint.found { color: var(--navy-800); font-weight: 700; }
+
+.directory-toggle {
+  width: 100%;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy-800);
+  text-align: left;
+  margin-bottom: 26px;
+  cursor: pointer;
+}
+.directory-panel { margin-top: -14px; margin-bottom: 26px; }
+.directory-panel[hidden] { display: none; }
+.directory-row-edit {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.directory-row-edit input {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 14px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+}
+.directory-row-edit input:nth-child(1) { width: 90px; flex-shrink: 0; }
+.directory-row-edit input:nth-child(2) { flex: 1; min-width: 0; }
+.directory-list { display: flex; flex-direction: column; gap: 6px; }
+.directory-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.directory-item .dno { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--navy-800); width: 42px; flex-shrink: 0; }
+.directory-item .dname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.directory-item button {
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.directory-item .edit-link { color: var(--accent); }
+.directory-item .del-link { color: var(--danger); }
+
+/* レシートOCR確認・修正欄 */
+.ocr-review {
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid #b9d9ef;
+  border-radius: 10px;
+  background: #f4fbff;
+}
+.ocr-review[hidden] { display: none !important; }
+.ocr-review-title {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--navy-900);
+}
+.ocr-review-note {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.ocr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.ocr-grid .field { margin-bottom: 0; }
+.ocr-full { grid-column: 1 / -1; }
+@media (max-width: 420px) {
+  /* スマホでも8%対象金額と10%対象金額は横並びを維持 */
+  .ocr-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+  .ocr-full { grid-column: 1 / -1; }
+  .ocr-grid .field { min-width: 0; }
+  .ocr-grid .field label { font-size: 11.5px; }
+  .ocr-grid .field input,
+  .ocr-grid .field select { min-width: 0; width: 100%; }
+}
+
+
+[hidden]{display:none!important}button,input,select,textarea{font:inherit}button{cursor:pointer;min-height:48px}button:disabled{opacity:.55;cursor:wait}input,select,textarea{font-size:16px!important}.field input[type=date],.field input[type=password]{width:100%;min-height:48px;border:1px solid var(--border);border-radius:8px;padding:10px;background:white;color:var(--ink)}.field label{font-size:14px;color:var(--ink);font-weight:700}.entry-card{margin-bottom:18px}.closing{background:#fff4d9;border:2px solid #d99020;border-radius:12px;padding:16px;margin-bottom:20px;color:#603b00}.closing strong{display:block;font-size:19px}.closing b{display:block;font-size:24px;margin:4px 0}.closing p{margin:4px 0;font-size:13px}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1;min-width:90px}.plain-btn{border:1px solid var(--border);border-radius:8px;background:white;padding:10px 12px;color:var(--navy-900)}.danger-btn{color:#ac2f25;border-color:#d9a8a4}.message{white-space:pre-wrap;color:#ac2f25;font-size:14px;margin:12px 0}.note{color:var(--ink-soft);font-size:13px}.receipt-preview{min-height:140px}.receipt-preview img{max-height:220px}.record{background:white;border:1px solid var(--border);border-radius:12px;padding:15px;margin-bottom:12px}.record h3{font-size:16px;margin:4px 0}.record p{margin:4px 0;overflow-wrap:anywhere}.record .amount{font-size:22px;font-weight:800;color:var(--navy-900)}.badge{display:inline-block;border-radius:12px;padding:2px 8px;background:var(--accent-soft);font-size:12px}.cancelled{background:#eee;color:#666}.viewer{position:fixed;inset:0;z-index:10000;background:#f4f8fc;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}.viewer-head{display:flex;gap:8px;align-items:center;background:white;padding:10px;border-bottom:1px solid var(--border)}.viewer-head strong{flex:1}.viewer-body{overflow:auto;flex:1;padding:12px;overscroll-behavior:contain}.viewer-body img{max-width:100%;display:block;margin:auto}.viewer-body canvas{display:block;background:white;margin:auto}.pdf-controls{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px;background:white;flex-wrap:wrap}.pdf-controls button{min-width:48px}.pdf-controls span{min-width:65px;text-align:center}.top-actions{display:flex;align-items:center;justify-content:space-between;margin:12px 0}.submit-btn{margin:12px 0 18px}.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.two .field{min-width:0}#login-panel{margin-top:20px}#preview-action{width:100%;margin:8px 0}.viewer-title{font-size:14px}.header-band{margin-bottom:16px}.ocr-review{display:block}#employeeNo{background:#f2f6fa}.record .note{font-size:12px}#draft-button{background:var(--accent)}
+dialog.ocr-complete{width:calc(100% - 32px);max-width:420px;border:2px solid var(--accent);border-radius:16px;padding:24px;color:var(--ink);box-shadow:0 12px 40px #0003}dialog.ocr-complete::backdrop{background:#15304788}dialog.ocr-complete h2{font-size:20px}dialog.ocr-complete p{white-space:pre-wrap}dialog.ocr-complete button{width:100%;margin-bottom:0}
+</style><style>
+#receipt-sheet{position:fixed;inset:0;z-index:100;background:#eef2f6;overflow:auto;padding:12px}#receipt-sheet .sheet-toolbar{position:sticky;top:0;background:#fff;padding:12px;border-radius:10px;z-index:1}#sheet-pages{max-width:794px;margin:16px auto}#sheet-pages img{display:block;width:100%;height:auto;background:white;box-shadow:0 2px 8px #ccd3db;margin:0 0 16px}#receipt-sheet a{display:inline-block;text-decoration:none}#receipt-sheet .actions{margin-top:10px}.viewer-head{flex-wrap:wrap}
+@media print{@page{size:A4 portrait;margin:0}html,body{margin:0!important;padding:0!important;overflow:visible!important;background:white!important}body>:not(#receipt-sheet){display:none!important}#receipt-sheet{position:static!important;padding:0!important;overflow:visible!important;background:white!important}#receipt-sheet .sheet-toolbar{display:none!important}#sheet-pages{max-width:none!important;margin:0!important}#sheet-pages img{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always}#sheet-pages img:last-child{break-after:auto;page-break-after:auto}}
+</style></head><body>
+<main class="app"><header class="header-band"><span class="chip">経費申請</span><h1>（株）アニマ社員経費</h1><p class="subtitle">レシートの写真・PDFから経費を登録</p></header>
+<section class="entry-card" id="login-panel"><h2>社員ログイン</h2><form id="login-form"><div class="field"><label for="login-no">社員番号</label><input id="login-no" type="text" inputmode="numeric" autocomplete="username" required></div><div class="field"><label for="login-pin">携帯電話番号の下4桁</label><input id="login-pin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="current-password" required></div><button class="submit-btn" id="login-button">ログインする</button><p class="message" id="login-message" role="status"></p></form></section>
+<div id="workspace" hidden><p id="load-status" class="note" role="status"></p><button type="button" class="plain-btn" id="load-retry" hidden>画面を再読み込み</button><div class="top-actions"><span id="user-label"></span><button class="plain-btn" id="logout-button" type="button">ログアウト</button></div>
+<aside id="closing" class="closing"><strong>今月の経費締め</strong><b id="closing-date">確認中…</b><p id="closing-month"></p><button type="button" class="plain-btn" id="closing-retry" hidden>締め日を再確認</button></aside>
+<section class="entry-card"><h2>新規申請</h2><form id="expense-form"><fieldset id="entry-fields" disabled style="border:0;padding:0;margin:0;min-width:0">
+<div class="field"><label for="employeeNo">社員番号・氏名</label><input id="employeeNo" type="text" readonly></div>
+<div class="field"><label for="receipt">① レシートの読み取り</label><div class="receipt-upload"><div id="receipt-preview" class="receipt-preview">タップして撮影・写真・PDFを選択</div><input type="file" id="receipt" accept="image/*,application/pdf,.pdf"></div><div class="actions" style="margin-top:10px"><button class="plain-btn" id="take-photo" type="button">写真を撮る</button><button class="plain-btn" id="pick-album" type="button">アルバムから</button><button class="plain-btn" id="pick-pdf" type="button">PDFを選ぶ</button></div><input id="camera-file" type="file" accept="image/*" capture="environment" hidden><input id="album-file" type="file" accept="image/*" hidden><input id="pdf-file" type="file" accept="application/pdf,.pdf" hidden><p class="note">写真・PDFは6MB以内。読み取り後、各項目をご確認ください。</p><button id="preview-action" class="plain-btn" type="button" hidden>選んだ写真・PDFを確認</button><p id="ocr-status" class="note" role="status"></p><div class="actions"><button class="plain-btn" id="ocr-retry" type="button" hidden>もう一度読み取る</button><button class="plain-btn" id="ocr-stop" type="button" hidden>手入力に切り替える</button><button class="plain-btn danger-btn" id="clear-receipt" type="button" hidden>選択を取り消す</button></div></div>
+<div class="field"><label for="expenseDate">② 利用日（自動入力・修正可）</label><input id="expenseDate" type="date" required></div>
+<div class="field"><label for="projectName">③ 経費の振り分け先</label><select id="projectName" required><option value="">選択してください</option></select><p class="note">振り分け先の登録は管理者が行います。一覧にない場合は「一覧にない（摘要に記入）」を選び、摘要2または摘要3に振り分け先を記入してください。</p></div>
+<div class="field"><label for="memo1">④ 摘要1（自動入力・修正可）</label><textarea id="memo1" rows="2" placeholder="レシートの内容を自動入力します"></textarea><label for="memo2">摘要2</label><textarea id="memo2" rows="2" placeholder="必要事項を自由に入力してください"></textarea><label for="memo3">摘要3</label><textarea id="memo3" rows="2" placeholder="必要事項を自由に入力してください"></textarea></div>
+<div class="field"><label for="paymentMethod">⑤ 支払方法</label><select id="paymentMethod" required><option value="">選択してください</option><option value="現金">現金</option><option value="会社クレジット：アメックス">会社クレジット：AMEXカード</option><option value="個人クレジット">個人クレジット</option></select></div>
+<div class="field"><label for="amount">⑥ 金額（自動入力・修正可）</label><div class="amount-wrap"><span class="yen">¥</span><input type="text" id="amount" inputmode="numeric" pattern="[0-9,]*" required placeholder="0"></div></div>
+<div class="field"><label for="category">店名・内容（自動入力・修正可）</label><input type="text" id="category" placeholder="店名・内容"></div>
+<div class="two"><div class="field"><label for="tax8">8%対象金額（税込）</label><input type="text" id="tax8" inputmode="numeric" pattern="[0-9,]*" placeholder="0"></div><div class="field"><label for="tax10">10%対象金額（税込）</label><input type="text" id="tax10" inputmode="numeric" pattern="[0-9,]*" placeholder="0"></div></div>
+<button class="submit-btn" id="draft-button" type="submit">⑦ 下書き登録する</button><p class="note">入力内容を確認して登録してください。下書き登録後に、履歴から申請できます。</p><p class="message" id="form-message" role="status"></p><button type="button" class="plain-btn" id="check-save" hidden>保存結果を確認する</button></fieldset></form></section>
+<section id="draft-section"><h2>下書き（未申請）</h2><p class="note">内容を確認して申請してください。不要な下書きは取り消せます。</p><p class="message" id="draft-message" role="status"></p><div id="draft-list"></div></section><section class="history"><div class="top-actions"><h2 style="margin:0">申請履歴</h2><button class="plain-btn" id="refresh" type="button">履歴を更新</button></div><p class="note">写真・PDFは会社用の保存先から表示します。</p><p class="message" id="history-message" role="status"></p><div id="entries-list"></div></section><p class="note" style="text-align:center">会社用・下書き取消／空欄台紙 2026.10.24-R9・入口版</p></div></main>
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-labelledby="viewer-title" hidden><div class="viewer-head"><strong id="viewer-title">領収書</strong><a id="download-receipt" class="plain-btn" download="領収書.pdf">保存</a><button type="button" class="plain-btn" id="viewer-sheet" hidden>レシートを台紙に貼る</button><button type="button" class="plain-btn" id="viewer-close">閉じる</button></div><div id="pdf-controls" class="pdf-controls" hidden><button type="button" class="plain-btn" id="pdf-prev">前へ</button><span id="pdf-page"></span><button type="button" class="plain-btn" id="pdf-next">次へ</button><button type="button" class="plain-btn" id="pdf-minus">−</button><span id="pdf-zoom">100%</span><button type="button" class="plain-btn" id="pdf-plus">＋</button></div><div class="viewer-body" id="viewer-body"><p id="viewer-message" class="message" role="status"></p><div id="viewer-content"></div></div></div>
+
+<dialog id="ocr-complete-dialog" class="ocr-complete" aria-labelledby="ocr-complete-title" aria-describedby="ocr-complete-detail"><h2 id="ocr-complete-title">読み取りが完了しました</h2><p id="ocr-complete-detail"></p><button id="ocr-complete-ok" type="button" class="submit-btn">内容を確認する</button></dialog>
+<section id="receipt-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden><div class="sheet-toolbar"><strong id="sheet-title">領収書貼付台紙</strong><div class="actions"><a id="sheet-pdf" class="plain-btn" target="_blank" rel="noopener" hidden>台紙PDFを開く</a><a id="sheet-save" class="plain-btn" hidden>台紙PDFを保存</a><button id="sheet-print" class="plain-btn" type="button" disabled>台紙を印刷</button><button id="sheet-close" class="plain-btn" type="button">× 閉じる</button></div><p id="sheet-message" class="note" role="status"></p></div><div id="sheet-pages"></div></section>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const money = value => Number(value || 0).toLocaleString('ja-JP');
+const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const state = { token:'', employeeNo:'', epoch:0, entries:[], ready:false, login:false, loading:false, saving:false, changing:false, receiptVersion:0, preparing:false, scanning:false, receipt:null, operationId:'' };
+let pdfDoc=null, pdfPage=1, pdfZoom=1, pdfTask=null, viewerSequence=0, pdfLibrary=null, blobUrl='';
+function message(id,text) { $(id).textContent=text; }
+function errorText(error) { return String(error?.message || error || '操作に失敗しました'); }
+function today() { return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()); }
+function newId() { return 'expense_'+(globalThis.crypto?.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+'_'+Math.random().toString(36).slice(2)); }
+function stored(value) { try { if(arguments.length) { if(value)sessionStorage.setItem('anima-company-session',value);else sessionStorage.removeItem('anima-company-session'); } else return sessionStorage.getItem('anima-company-session') || ''; } catch(_) {return '';} }
+function timed(promise,ms,text) {
+  return new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject(new Error(text)),ms);
+    Promise.resolve(promise).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});
+  });
+}
+const COMPANY_API_URL = "https://script.google.com/macros/s/AKfycbwL_19ZAF9qMp-_8TqOQbHGP2SPSN6RdPuzJbIoeYeDXONgBqhzF0GUoOvRnV-hloAl0A/exec";
+async function call(name,args,ms=45000) {
+  if (!['loginExpense','expenseRpc','health'].includes(name)) throw new Error('許可されていない操作です');
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    // A simple POST avoids an OPTIONS preflight. Credentials/tokens never go in URLs.
+    // Do not retry writes automatically: existing draftStatus verifies lost responses.
+    const response = await fetch(COMPANY_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify({protocol:'anima-company-web-v1',method:name,args}),
+      credentials: 'omit', redirect: 'follow', referrerPolicy: 'no-referrer',
+      signal: controller.signal
+    });
+    if (!response.ok) throw new Error('会社の保存先との通信に失敗しました。時間をおいて、もう一度お試しください。');
+    let body;
+    try { body = JSON.parse(await response.text()); }
+    catch (_) { throw new Error('会社側の通信設定を確認できません。管理者に連絡してください。'); }
+    if (!body || typeof body.ok !== 'boolean') throw new Error('会社側の応答形式を確認できません。');
+    if (!body.ok) throw new Error(body.error || '処理に失敗しました');
+    return body.result;
+  } catch (error) {
+    if (error && error.name === 'AbortError') throw new Error('通信の応答を確認できませんでした。時間をおいて、もう一度お試しください。');
+    if (error instanceof TypeError) throw new Error('会社の保存先に接続できません。通信環境または会社側の更新を確認してください。');
+    throw error;
+  } finally { clearTimeout(timer); }
+}
+async function rpc(action,data={},ms=45000) {
+  const epoch=state.epoch;
+  try { return await call('expenseRpc',[state.token,action,data],ms); }
+  catch(error) {
+    if(epoch===state.epoch && /再ログイン|有効期限/.test(errorText(error))) showLogin('ログインの有効期限が切れました。再度ログインしてください。');
+    throw error;
+  }
+}
+function syncControls() {
+  const locked=state.saving || state.changing;
+  $('login-button').disabled=state.login;
+  $('login-button').textContent=state.login?'ログインを確認しています…':'ログインする';
+  $('entry-fields').disabled=!state.ready || locked;
+  $('draft-button').disabled=!state.ready || locked || state.preparing || state.scanning;
+  $('draft-button').textContent=state.saving?'保存しています…':'⑦ 下書き登録する';
+  for(const id of ['receipt','take-photo','pick-album','pick-pdf','camera-file','album-file','pdf-file']) $(id).disabled=locked;
+  $('clear-receipt').hidden=!state.receipt && !state.preparing;
+  $('clear-receipt').disabled=locked;
+  $('preview-action').hidden=!state.receipt;
+  $('ocr-retry').hidden=!state.receipt;
+  $('ocr-retry').disabled=locked || state.preparing || state.scanning;
+  $('ocr-stop').hidden=!state.scanning && !state.preparing;
+  $('refresh').disabled=state.loading || locked;
+  $('logout-button').disabled=locked;
+  $('check-save').disabled=locked;
+}
+function clearReceipt(ask=false) {
+  if(state.saving || state.changing)return;
+  if(ask && !confirm('選択した写真・PDFと自動入力欄をクリアしますか？'))return;
+  state.receiptVersion++;state.preparing=false;state.scanning=false;state.receipt=null;state.operationId='';
+  if($('ocr-complete-dialog').open)$('ocr-complete-dialog').close();
+  for(const id of ['receipt','camera-file','album-file','pdf-file']) $(id).value='';
+  for(const id of ['amount','category','memo1','tax8','tax10']) $(id).value='';
+  $('expenseDate').value=today();
+  $('receipt-preview').replaceChildren();$('receipt-preview').classList.remove('has-image');
+  message('receipt-preview','タップして撮影・写真・PDFを選択');message('ocr-status','');$('check-save').hidden=true;syncControls();
+}
+function resetForm() {
+  const employee=$('employeeNo').value;
+  clearReceipt();$('expense-form').reset();$('employeeNo').value=employee;$('expenseDate').value=today();syncControls();
+}
+function showLogin(text='') {
+  state.epoch++;state.token='';state.employeeNo='';state.ready=false;state.entries=[];state.login=false;state.loading=false;state.saving=false;state.changing=false;
+  stored('');closeReceiptSheet();closeViewer();clearReceipt();$('expense-form').reset();$('employeeNo').value='';
+  $('workspace').hidden=true;$('login-panel').hidden=false;$('entries-list').replaceChildren();$('draft-list').replaceChildren();message('draft-message','');message('login-message',text);syncControls();
+}
+function setOptions(items) {
+  const selected=$('projectName').value,node=$('projectName');
+  node.replaceChildren(new Option('選択してください',''));
+  [...new Set([...(Array.isArray(items)?items:[]),'一覧にない（摘要に記入）'])].forEach(name=>node.add(new Option(name,name)));
+  node.value=selected;
+}
+async function refreshClosing(epoch=state.epoch) {
+  $('closing-retry').hidden=true;message('closing-date','締め日を確認しています…');
+  try {
+    const info=await rpc('closing',{},30000);if(epoch!==state.epoch)return;
+    message('closing-date',info.closingDate.replace(/-/g,'/')+' '+info.closingTime);
+    message('closing-month','経費計上月：'+info.accountingMonth+(info.afterClosing?'（今月の締めは終了しました）':''));
+  }catch(error) {
+    if(epoch!==state.epoch)return;
+    message('closing-date','締め日を取得できませんでした');message('closing-month',errorText(error));$('closing-retry').hidden=false;
+  }
+}
+async function load() {
+  if(state.loading)return;
+  const epoch=state.epoch;state.loading=true;message('load-status','振り分け先と申請履歴を読み込んでいます…');$('load-retry').hidden=true;syncControls();
+  try {
+    const data=await rpc('load');if(epoch!==state.epoch)return;
+    if(!data || !Array.isArray(data.expenses) || !Array.isArray(data.projects))throw new Error('画面のデータを確認できませんでした。再読み込みしてください。');
+    if(state.employeeNo && String(data.employeeNo)!==state.employeeNo) {
+      showLogin('ログイン情報と社員番号が一致しません。再度ログインしてください。');return;
+    }
+    if(data.expenses.some(entry=>String(entry.employeeNo)!==String(data.employeeNo))) {
+      showLogin('本人以外の履歴が含まれるため、表示を中止しました。管理者に連絡してください。');return;
+    }
+    state.employeeNo=String(data.employeeNo);state.entries=data.expenses;state.ready=true;
+    $('login-panel').hidden=true;$('workspace').hidden=false;
+    message('user-label',data.employeeName+' さん');$('employeeNo').value=data.employeeNo+'：'+data.employeeName;
+    setOptions(data.projects);renderEntries();message('load-status','');
+    refreshClosing(epoch);
+  }catch(error) {
+    if(epoch!==state.epoch)return;
+    message('load-status',errorText(error));$('load-retry').hidden=false;
+  }finally {if(epoch===state.epoch){state.loading=false;syncControls();}}
+}
+async function login(event) {
+  event.preventDefault();if(state.login)return;
+  state.login=true;const epoch=++state.epoch;syncControls();message('login-message','会社の社員一覧を確認しています…');
+  try {
+    const result=await call('loginExpense',[$('login-no').value,$('login-pin').value]);if(epoch!==state.epoch)return;
+    if(!result?.token)throw new Error('ログインを確認できませんでした。もう一度お試しください。');
+    state.token=result.token;state.employeeNo=String(result.employeeNo);stored(result.token);$('login-pin').value='';
+    $('login-panel').hidden=true;$('workspace').hidden=false;message('user-label',result.employeeName+' さん');
+    await load();
+  }catch(error) {if(epoch===state.epoch)message('login-message',errorText(error));}
+  finally {if(epoch===state.epoch){state.login=false;syncControls();}}
+}
+function fileData(file) {
+  return timed(new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(new Error('ファイルを読み込めませんでした'));reader.readAsDataURL(file);}),30000,'ファイルを読み込めませんでした。選び直してください。');
+}
+async function preparePhoto(file) {
+  if(file.type==='application/pdf' || /\.pdf$/i.test(file.name)) {
+    if(file.size>6*1024*1024)throw new Error('PDFは6MB以内で選択してください');
+    return (await fileData(file)).replace(/^data:[^;]*;/,'data:application/pdf;');
+  }
+  if(file.size>30*1024*1024)throw new Error('写真が大きすぎます。解像度を下げて選び直してください');
+  const data=await fileData(file),image=new Image();
+  await timed(new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(new Error('この写真を開けません。JPEG・PNGで選び直してください'));image.src=data;}),30000,'写真を開けませんでした。選び直してください。');
+  const scale=Math.min(1,2400/Math.max(image.naturalWidth,image.naturalHeight)),canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+  const context=canvas.getContext('2d');context.fillStyle='white';context.fillRect(0,0,canvas.width,canvas.height);context.drawImage(image,0,0,canvas.width,canvas.height);
+  const result=canvas.toDataURL('image/jpeg',.88);
+  if(result.length>8*1024*1024)throw new Error('写真が大きすぎます。解像度を下げて選び直してください');
+  return result;
+}
+function showThumbnail(data,caption) {
+  const image=new Image();image.src=data;image.alt='選択した領収書';
+  $('receipt-preview').replaceChildren(image);$('receipt-preview').classList.add('has-image');
+  if(caption){const text=document.createElement('p');text.className='note';text.textContent=caption;$('receipt-preview').append(text);}
+}
+async function handleReceiptFile(file) {
+  if(!file || state.saving || state.changing)return;
+  if(state.receipt && !confirm('選択した写真・PDFを変更して、もう一度読み取りますか？'))return;
+  clearReceipt();const version=state.receiptVersion,epoch=state.epoch;
+  state.preparing=true;message('form-message','');message('receipt-preview','写真・PDFを読み込んでいます…');syncControls();
+  try {
+    const data=await preparePhoto(file);if(version!==state.receiptVersion || epoch!==state.epoch)return;
+    state.receipt={data,name:file.name,images:[],preview:''};state.operationId=newId();
+    if(data.startsWith('data:application/pdf')) {
+      message('receipt-preview','PDFのプレビューを準備しています…');syncControls();
+      try {
+        const pdf=await timed(preparePdfImages(data),30000,'PDFプレビューの準備が時間切れになりました');
+        if(version!==state.receiptVersion || epoch!==state.epoch)return;
+        state.receipt.images=pdf.images;state.receipt.preview=pdf.preview;
+        showThumbnail(pdf.preview,'PDF・'+pdf.pages+'ページ（先頭ページ）');
+      }catch(error) {
+        if(version!==state.receiptVersion || epoch!==state.epoch)return;
+        message('receipt-preview','選択済み：'+file.name);message('ocr-status',errorText(error)+'。原本PDFで読み取りを試します。');
+      }
+    }else showThumbnail(data);
+    if(version!==state.receiptVersion || epoch!==state.epoch)return;
+    state.preparing=false;syncControls();await runOcr();
+  }catch(error) {
+    if(version!==state.receiptVersion || epoch!==state.epoch)return;
+    state.receipt=null;state.operationId='';message('receipt-preview','写真・PDFを選び直してください');message('form-message',errorText(error));
+  }finally {if(version===state.receiptVersion && epoch===state.epoch){state.preparing=false;syncControls();}}
+}
+async function runOcr() {
+  if(!state.receipt || state.scanning || state.preparing || state.saving)return;
+  const receipt=state.receipt,version=++state.receiptVersion,epoch=state.epoch;
+  state.scanning=true;message('ocr-status','レシートを読み取っています。手入力に切り替えることもできます。');syncControls();
+  try {
+    const result=await rpc('ocr',{photoData:receipt.data,ocrImages:receipt.images},90000);
+    if(version!==state.receiptVersion || epoch!==state.epoch)return;
+    if(!result || (!result.date && result.amount==null && !result.storeName && !result.description))throw new Error('内容を読み取れませんでした。撮り直すか、手入力してください。');
+    if(result.date)$('expenseDate').value=result.date;
+    if(result.amount!=null)$('amount').value=money(result.amount);
+    $('category').value=[result.storeName,result.description].filter(Boolean).join(' / ');$('memo1').value=result.description || '';
+    if(result.tax8!=null)$('tax8').value=money(result.tax8);if(result.tax10!=null)$('tax10').value=money(result.tax10);
+    const missing=result.missingFields || [];
+    message('ocr-status',missing.length?'一部を読み取りました。未読取：'+missing.join('・')+'。空欄を入力してください。':'読み取りました。②〜⑥の内容を確認してください。');
+    showOcrCompletion(result,missing);
+  }catch(error) {if(version===state.receiptVersion && epoch===state.epoch)message('ocr-status',errorText(error)+' 手入力でも登録できます。');}
+  finally {if(version===state.receiptVersion && epoch===state.epoch){state.scanning=false;syncControls();}}
+}
+function showOcrCompletion(result,missing) {
+  message('ocr-complete-title',missing.length?'一部の読み取りが完了しました':'読み取りが完了しました');
+  const details=['利用日：'+(result.date || '未読取'), '金額：'+(result.amount!=null?money(result.amount)+'円':'未読取')];
+  if(missing.length)details.push('未読取：'+missing.join('・')+'。入力欄で補ってください。');
+  else details.push('読み取った内容を確認してください。');
+  message('ocr-complete-detail',details.join('\n'));
+  $('ocr-complete-dialog').showModal();
+}
+function stopOcr() {
+  state.receiptVersion++;state.scanning=false;state.preparing=false;
+  message('ocr-status','自動入力を中止しました。②〜⑥を手入力してください。');syncControls();
+}
+function number(id) { return Number($(id).value.replace(/,/g,'').trim() || 0); }
+function acceptSavedDraft(result,id) {
+  const entry=result?.entry;
+  if(!entry || entry.id!==id || String(entry.employeeNo)!==state.employeeNo)throw new Error('本人の保存結果を確認できませんでした。管理者に連絡してください。');
+  // Mark completion before touching the form or drawing history.
+  state.saving=false;state.entries=state.entries.filter(item=>item.id!==entry.id).concat(entry);
+  resetForm();syncControls();
+  const done='下書きを登録しました。申請番号：'+(entry.applicationNumber || '履歴をご確認ください')+'。';
+  message('form-message',done+(result.warning || '履歴で確認して申請してください。'));
+  try {renderEntries();}catch(error){message('history-message','下書きは保存済みです。履歴の表示を更新してください。');}
+  try {$('draft-section').scrollIntoView({behavior:'smooth'});}catch(_){}
+}
+function saveWithVerification(payload) {
+  const epoch=state.epoch;
+  return new Promise((resolve,reject)=>{
+    let finished=false,timer;
+    function finish(error,value) {
+      if(finished)return;finished=true;clearTimeout(timer);
+      if(error)reject(error);else resolve(value);
+    }
+    async function verify() {
+      if(finished)return;
+      if(epoch!==state.epoch){finish(new Error('ログイン状態が変わりました。'));return;}
+      message('form-message','保存結果を確認しています。登録ボタンを押し直さずにお待ちください…');
+      try {
+        const status=await rpc('draftStatus',{id:payload.id},15000);
+        if(status?.found){finish(null,status);return;}
+      }catch(error) {
+        if(epoch!==state.epoch){finish(error);return;}
+      }
+      if(!finished)timer=setTimeout(verify,6000);
+    }
+    // One write only. If its response is lost, recover by reading the same ID.
+    rpc('draft',payload,45000).then(result=>finish(null,result),async error=>{
+      if(finished)return;
+      try {const status=await rpc('draftStatus',{id:payload.id},15000);if(status?.found){finish(null,status);return;}}catch(_){}
+      finish(error);
+    });
+    timer=setTimeout(verify,6000);
+  });
+}
+async function checkSaveResult() {
+  if(state.saving || !state.operationId)return;
+  const epoch=state.epoch,id=state.operationId;state.saving=true;syncControls();
+  message('form-message','保存済みか確認しています…');
+  try {
+    const result=await rpc('draftStatus',{id},15000);if(epoch!==state.epoch)return;
+    if(result?.found)acceptSavedDraft(result,id);
+    else message('form-message','この下書きの保存は、まだ確認できません。入力内容は残しています。少し待って再確認してください。');
+  }catch(error){if(epoch===state.epoch)message('form-message',errorText(error)+' 入力内容は残しています。');}
+  finally{if(epoch===state.epoch){state.saving=false;syncControls();}}
+}
+async function saveDraft(event) {
+  event.preventDefault();if(state.saving || state.changing || state.preparing || state.scanning || !state.ready)return;
+  if(!state.receipt){message('form-message','写真またはPDFを選択してください。');return;}
+  if($('projectName').value==='一覧にない（摘要に記入）' && !$('memo2').value.trim() && !$('memo3').value.trim()){message('form-message','一覧にない振り分け先は、摘要2または3に記入してください。');$('memo2').focus();return;}
+  const payload={id:state.operationId || (state.operationId=newId()),photoData:state.receipt.data,previewPhotoData:state.receipt.preview,expenseDate:$('expenseDate').value,projectName:$('projectName').value,paymentMethod:$('paymentMethod').value,amount:number('amount'),category:$('category').value,memo1:$('memo1').value,memo2:$('memo2').value,memo3:$('memo3').value,tax8:number('tax8'),tax10:number('tax10')};
+  const epoch=state.epoch;state.saving=true;$('check-save').hidden=true;message('form-message','会社の保存先に下書きを登録しています…');syncControls();
+  try {
+    const result=await saveWithVerification(payload);if(epoch!==state.epoch)return;
+    acceptSavedDraft(result,payload.id);
+  }catch(error) {
+    if(epoch===state.epoch){
+      message('form-message',errorText(error)+' 入力内容は残しています。「保存結果を確認する」を押してください。保存済みの下書きを登録し直す必要はありません。');
+      $('check-save').hidden=false;
+    }
+  }finally {if(epoch===state.epoch){state.saving=false;syncControls();}}
+}
+function recordButton(label,handler,danger=false) {
+  const button=document.createElement('button');button.type='button';button.className='plain-btn'+(danger?' danger-btn':'');button.textContent=label;
+  button.disabled=state.changing || state.saving;
+  button.onclick=async()=>{button.disabled=true;try{await handler();}catch(error){message('history-message',errorText(error));}finally{if(button.isConnected)button.disabled=false;}};return button;
+}
+function renderEntries() {
+  const list=$('entries-list'),drafts=$('draft-list');list.replaceChildren();drafts.replaceChildren();
+  const visible=state.entries.filter(entry=>['下書き','申請済','未処理'].includes(entry.status));
+  if(!visible.some(entry=>entry.status==='下書き'))drafts.textContent='下書きはありません。';
+  if(!visible.some(entry=>['申請済','未処理'].includes(entry.status)))list.textContent='申請履歴はありません。';
+  [...visible].reverse().forEach(entry=>{
+    const card=document.createElement('article');card.className='record';
+    const destinations=[...new Set([entry.siteName,entry.projectName].filter(Boolean))].join(' ／ ');
+    card.innerHTML='<p class="note">申請番号：'+esc(entry.applicationNumber || '確認中')+'</p><span class="badge '+(entry.status==='申請取消'?'cancelled':'')+'">'+esc(entry.status)+'</span><p class="note">'+esc(entry.expenseDate)+' ・ '+esc(entry.paymentMethod)+'</p><h3>'+esc(entry.category || entry.memo1 || '経費')+'</h3><p class="amount">¥'+money(entry.amount)+'</p><p>経費の振り分け先：'+esc(destinations)+'</p><p>'+esc([entry.memo1,entry.memo2,entry.memo3].filter(Boolean).join(' ／ '))+'</p><p class="note">経費計上月：'+esc(entry.accountingMonth || '申請時に確定')+'</p>';
+    const actions=document.createElement('div');actions.className='actions';
+    const view=recordButton(entry.hasReceipt?'写真・PDFを見る':'領収書の保存先なし',()=>openStoredReceipt(entry));view.disabled=!entry.hasReceipt || state.changing || state.saving;actions.append(view);
+    if(['申請済','未処理'].includes(entry.status))actions.append(recordButton('レシートを台紙に貼る',()=>openReceiptSheet(entry)));
+    if(entry.status==='下書き'){actions.append(recordButton('この内容で申請',()=>changeStatus('submit',entry)));actions.append(recordButton('下書き取り消し',()=>changeStatus('cancel',entry),true));}
+    if(['申請済','未処理'].includes(entry.status))actions.append(recordButton('申請取り消し',()=>changeStatus('cancel',entry),true));
+    if(['申請通知待ち','取消通知待ち'].includes(entry.notification))actions.append(recordButton('メール再送',()=>changeStatus(entry.status==='申請取消'?'cancel':'submit',entry)));
+    card.append(actions);(entry.status==='下書き'?drafts:list).append(card);
+  });
+}
+async function changeStatus(action,entry) {
+  if(state.saving || state.changing)return;
+  const draft=entry.status==='下書き',statusMessage=draft?'draft-message':'history-message';
+  if(!confirm(action==='cancel'?(draft?'この下書きを取り消しますか？下書き一覧から消えます。':'申請を取り消しますか？取消記録と領収書は残ります。'):'経理担当者に申請メールを送ります。よろしいですか？'))return;
+  const epoch=state.epoch;state.changing=true;syncControls();renderEntries();message(statusMessage,action==='cancel'?'取り消しを登録しています…':'申請を登録しています…');
+  try {
+    const result=await rpc(action,{id:entry.id},90000);if(epoch!==state.epoch)return;
+    if(!result?.entry)throw new Error('処理結果を確認できませんでした');
+    state.entries=action==='cancel' && result.entry.status==='申請取消'
+      ? state.entries.filter(x=>x.id!==entry.id)
+      : state.entries.map(x=>x.id===entry.id?result.entry:x);
+    message(statusMessage,result.warning || (action==='cancel'?(draft?'下書きを取り消しました。':'申請を取り消しました。経理へ通知しました。'):'申請しました。経理へ通知しました。'));
+  }catch(error){if(epoch===state.epoch)message(statusMessage,errorText(error)+' 履歴を更新して処理結果を確認してください。');}
+  finally {if(epoch===state.epoch){state.changing=false;syncControls();renderEntries();}}
+}
+function closeViewer() {
+  viewerSequence++;viewerEntry=null;$('viewer-sheet').hidden=true;$('viewer').hidden=true;document.body.style.overflow='';
+  if(pdfTask)pdfTask.cancel();pdfTask=null;if(pdfDoc)pdfDoc.destroy();pdfDoc=null;
+  $('viewer-content').replaceChildren();if(blobUrl)URL.revokeObjectURL(blobUrl);blobUrl='';$('download-receipt').removeAttribute('href');
+}
+function startViewer() {
+  closeViewer();$('viewer').hidden=false;document.body.style.overflow='hidden';message('viewer-message','領収書を読み込んでいます…');$('pdf-controls').hidden=true;return viewerSequence;
+}
+async function showReceipt(data,name,sequence,preview='') {
+  try {await timed(displayReceipt(data,name,sequence,preview),30000,'PDF表示の準備が時間切れになりました');}
+  catch(error){if(sequence===viewerSequence)message('viewer-message',errorText(error)+' 「保存」から原本を確認できます。');}
+}
+async function openStoredReceipt(entry) {
+  const sequence=startViewer();viewerEntry=entry;$('viewer-sheet').hidden=!['申請済','未処理'].includes(entry.status);
+  try {const result=await rpc('receipt',{id:entry.id});if(sequence!==viewerSequence)return;await showReceipt(result.dataUrl,result.name,sequence,result.previewDataUrl);}
+  catch(error){if(sequence===viewerSequence)message('viewer-message',errorText(error));}
+}
+function bind() {
+  $('login-form').addEventListener('submit',login);$('expense-form').addEventListener('submit',saveDraft);
+  for(const id of ['receipt','camera-file','album-file','pdf-file']) $(id).onchange=()=>handleReceiptFile($(id).files[0]);
+  for(const [button,input] of [['take-photo','camera-file'],['pick-album','album-file'],['pick-pdf','pdf-file']]) $(button).onclick=()=>{$(input).value='';$(input).click();};
+  $('check-save').onclick=checkSaveResult;
+  $('ocr-complete-ok').onclick=()=>{$('ocr-complete-dialog').close();$('expenseDate').scrollIntoView({behavior:'smooth',block:'center'});$('expenseDate').focus({preventScroll:true});};
+  $('clear-receipt').onclick=()=>clearReceipt(true);$('ocr-stop').onclick=stopOcr;$('ocr-retry').onclick=()=>runOcr();
+  $('refresh').onclick=()=>load();$('load-retry').onclick=()=>load();$('closing-retry').onclick=()=>refreshClosing();
+  $('logout-button').onclick=()=>{if(state.receipt && !confirm('入力中の内容を破棄してログアウトしますか？'))return;const token=state.token;showLogin();call('expenseRpc',[token,'logout',{}],10000).catch(()=>{});};
+  $('viewer-close').onclick=closeViewer;document.addEventListener('keydown',event=>{if(event.key==='Escape')closeViewer();});
+  $('preview-action').onclick=()=>{if(state.receipt){const sequence=startViewer();showReceipt(state.receipt.data,state.receipt.name,sequence,state.receipt.preview);}};
+  window.addEventListener('beforeunload',event=>{if(state.receipt){event.preventDefault();event.returnValue='';}});
+}
+
+
+
+function cropReceiptCanvas(canvas){
+ const w=canvas.width,h=canvas.height,ctx=canvas.getContext('2d',{willReadFrequently:true});
+ const rgba=ctx.getImageData(0,0,w,h).data, cols=new Uint32Array(w),rows=new Uint32Array(h);
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const p=(y*w+x)*4;if(rgba[p+3]>128&&(rgba[p]+rgba[p+1]+rgba[p+2])/3<180){cols[x]++;rows[y]++;}}
+ const xs=[],ys=[];for(let x=0;x<w;x++)if(cols[x]>=Math.max(5,h*.004))xs.push(x);for(let y=0;y<h;y++)if(rows[y]>=Math.max(5,w*.004))ys.push(y);
+ if(!xs.length||!ys.length)return canvas;
+ const margin=Math.max(16,Math.round(Math.max(w,h)*.012)),left=Math.max(0,xs[0]-margin),top=Math.max(0,ys[0]-margin),right=Math.min(w,xs[xs.length-1]+margin),bottom=Math.min(h,ys[ys.length-1]+margin);
+ if((right-left)*(bottom-top)>w*h*.94)return canvas;
+ const out=document.createElement('canvas');out.width=right-left;out.height=bottom-top;out.getContext('2d').drawImage(canvas,left,top,out.width,out.height,0,0,out.width,out.height);return out;
+}
+async function preparePdfImages(dataUrl){
+ const lib=await getPdfLibrary(),bytes=Uint8Array.from(atob(dataUrl.split(',')[1]),c=>c.charCodeAt(0));
+ const doc=await lib.getDocument({data:bytes,cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/standard_fonts/',wasmUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/wasm/',isEvalSupported:false}).promise;
+ try{const images=[];let preview='';const count=doc.numPages<=5?doc.numPages:1;
+ for(let i=1;i<=count;i++){const page=await doc.getPage(i),base=page.getViewport({scale:1}),viewport=page.getViewport({scale:Math.min(3,3200/Math.max(base.width,base.height))}),canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);const ctx=canvas.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,canvas.width,canvas.height);await page.render({canvasContext:ctx,viewport}).promise;const crop=cropReceiptCanvas(canvas);let image=crop.toDataURL('image/jpeg',.88);if(image.length>1400000)image=crop.toDataURL('image/jpeg',.65);images.push(image);if(i===1)preview=image;}
+ return {images:doc.numPages<=5?images:[],preview,pages:doc.numPages};
+ }finally{await doc.destroy();}
+}
+
+async function getPdfLibrary(){if(!pdfLibrary)pdfLibrary=timed(import('https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/legacy/build/pdf.min.mjs'),20000,'PDF表示の準備が時間切れになりました').then(lib=>{lib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/legacy/build/pdf.worker.min.mjs';return lib;}).catch(e=>{pdfLibrary=null;throw new Error('PDF表示用のプログラムを読み込めませんでした。通信環境を確認し、もう一度開いてください。');});return pdfLibrary;}
+async function displayReceipt(dataUrl,name,seq,preview=''){const parts=dataUrl.split(',');const binary=atob(parts[1]);const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));const mime=parts[0].slice(5).split(';')[0];blobUrl=URL.createObjectURL(new Blob([bytes],{type:mime}));$('download-receipt').href=blobUrl;$('download-receipt').download=name||'領収書';$('viewer-title').textContent=mime==='application/pdf'?'領収書PDF':'領収書の写真';if(mime==='application/pdf'){if(preview){const img=new Image();img.src=preview;img.alt='PDF先頭ページ';$('viewer-content').replaceChildren(img);$('viewer-message').textContent='PDFの先頭ページです。全ページを準備しています…';}const lib=await getPdfLibrary();if(seq!==viewerSequence)return;const task=lib.getDocument({data:bytes,cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/standard_fonts/',wasmUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/wasm/',isEvalSupported:false});const doc=await task.promise;if(seq!==viewerSequence){doc.destroy();return;}pdfDoc=doc;pdfPage=1;pdfZoom=1;$('pdf-controls').hidden=false;await renderPdf(seq);}else{const img=new Image();img.src=dataUrl;img.alt='領収書の写真';$('viewer-content').replaceChildren(img);$('viewer-message').textContent='';}}
+async function renderPdf(seq=viewerSequence){if(!pdfDoc)return;if(pdfTask){const prior=pdfTask;prior.cancel();try{await prior.promise;}catch(e){}if(seq!==viewerSequence)return;}const page=await pdfDoc.getPage(pdfPage);if(seq!==viewerSequence)return;const base=page.getViewport({scale:1});const width=Math.max(240,$('viewer-body').clientWidth-24);const scale=width/base.width*pdfZoom;const viewport=page.getViewport({scale});const dpr=Math.min(devicePixelRatio||1,2);const canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width*dpr);canvas.height=Math.ceil(viewport.height*dpr);canvas.style.width=viewport.width+'px';canvas.style.height=viewport.height+'px';$('viewer-content').replaceChildren(canvas);const task=page.render({canvasContext:canvas.getContext('2d'),viewport,transform:dpr===1?null:[dpr,0,0,dpr,0,0]});pdfTask=task;try{await task.promise;if(seq!==viewerSequence)return;$('viewer-message').textContent='';$('pdf-page').textContent=pdfPage+' / '+pdfDoc.numPages;$('pdf-zoom').textContent=Math.round(pdfZoom*100)+'%';$('pdf-prev').disabled=pdfPage<=1;$('pdf-next').disabled=pdfPage>=pdfDoc.numPages;}catch(e){if(e.name!=='RenderingCancelledException')$('viewer-message').textContent='PDFを表示できませんでした。保存してご確認ください。';}finally{if(pdfTask===task)pdfTask=null;}}
+function pdfChange(fn){fn();renderPdf().catch(e=>{$('viewer-message').textContent=errorText(e);});}
+$('pdf-prev').onclick=()=>pdfChange(()=>{pdfPage=Math.max(1,pdfPage-1);});$('pdf-next').onclick=()=>pdfChange(()=>{if(pdfDoc)pdfPage=Math.min(pdfDoc.numPages,pdfPage+1);});$('pdf-plus').onclick=()=>pdfChange(()=>{pdfZoom=Math.min(2.5,pdfZoom+.25);});$('pdf-minus').onclick=()=>pdfChange(()=>{pdfZoom=Math.max(.75,pdfZoom-.25);});
+
+// Receipt mounting sheets: local generation only; no submission/cancellation writes.
+let sheetSequence=0, sheetBlobUrl='', viewerEntry=null;
+function closeReceiptSheet(){
+  sheetSequence++;$('receipt-sheet').hidden=true;$('sheet-pages').replaceChildren();
+  if(sheetBlobUrl)URL.revokeObjectURL(sheetBlobUrl);sheetBlobUrl='';
+  $('sheet-pdf').hidden=true;$('sheet-pdf').removeAttribute('href');$('sheet-save').hidden=true;$('sheet-save').removeAttribute('href');
+  $('sheet-print').disabled=true;document.body.style.overflow='';
+}
+function sheetDate(value){
+  if(!value)return '記録なし';
+  const s=String(value),m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if(m)return Number(m[1])+'年'+Number(m[2])+'月'+Number(m[3])+'日';
+  const d=new Date(value);if(!Number.isFinite(d.getTime()))return s;
+  return new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',year:'numeric',month:'long',day:'numeric'}).format(d);
+}
+function sheetLines(ctx,text,width){
+  const lines=[];let line='';
+  for(const ch of String(text||'').replace(/\r/g,'')){
+    if(ch==='\n'){lines.push(line);line='';continue;}
+    if(line&&ctx.measureText(line+ch).width>width){lines.push(line);line=ch;}else line+=ch;
+  }
+  if(line||!lines.length)lines.push(line);return lines;
+}
+function makeSheetPage(entry,receipt,pageNumber,pageCount){
+  const c=document.createElement('canvas');c.width=1240;c.height=1754;
+  const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle='#152e4b';ctx.font='bold 38px sans-serif';ctx.fillText('領収書貼付台紙',70,95);
+  ctx.font='22px sans-serif';ctx.textAlign='right';ctx.fillText('株式会社アニマ',1170,94);ctx.textAlign='left';
+  ctx.strokeStyle='#75869a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(70,115);ctx.lineTo(1170,115);ctx.stroke();
+  let y=154;ctx.fillStyle='#18232e';ctx.font='24px sans-serif';
+  const rows=[['申請番号',entry.applicationNumber||'未採番'],['社員',entry.employeeNo+'　'+(entry.employeeName||'')],
+    ['利用日',sheetDate(entry.expenseDate)],['申請日',sheetDate(entry.submittedAt)],
+    ['経費計上月',entry.accountingMonth||''],['振り分け先',[...new Set([entry.siteName,entry.projectName].filter(Boolean))].join(' ／ ')],
+    ['支払方法',entry.paymentMethod||''],['金額','¥'+money(entry.amount)],
+    ['摘要',[entry.category,entry.memo1,entry.memo2,entry.memo3].filter(Boolean).join(' ／ ')]];
+  for(const [label,value] of rows){
+    ctx.font='bold 23px sans-serif';ctx.fillText(label,70,y);ctx.font='24px sans-serif';
+    const lines=sheetLines(ctx,value,880);const shown=lines.slice(0,4);
+    if(lines.length>4)shown[3]=shown[3].slice(0,-1)+'…';
+    for(const line of shown){ctx.fillText(line,270,y);y+=32;}y+=8;
+  }
+  y+=12;ctx.font='22px sans-serif';ctx.fillStyle='#526170';ctx.fillText(receipt?'領収書':'領収書をこちらに貼付してください',70,y);y+=16;
+  const bx=70,by=y,bw=1100,bh=1654-y;
+  ctx.strokeStyle='#bec8d2';ctx.lineWidth=1;ctx.strokeRect(bx,by,bw,bh);
+  if(receipt){const scale=Math.min((bw-32)/receipt.width,(bh-32)/receipt.height);const w=receipt.width*scale,h=receipt.height*scale;ctx.drawImage(receipt,bx+(bw-w)/2,by+16,w,h);}
+  ctx.fillStyle='#526170';ctx.font='19px sans-serif';ctx.textAlign='right';ctx.fillText(pageNumber+' / '+pageCount,1170,1705);
+  return c;
+}
+// Minimal PDF writer: embeds only our JPEG canvases, with byte-accurate xref offsets.
+function mountingPdf(jpegs){
+  const enc=new TextEncoder(),chunks=[],offsets=[0];let size=0;
+  const put=x=>{const b=typeof x==='string'?enc.encode(x):x;chunks.push(b);size+=b.length;};
+  const object=(id,body)=>{offsets[id]=size;put(id+' 0 obj\n');put(body);put('\nendobj\n');};
+  put('%PDF-1.4\n');object(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  object(2,'<< /Type /Pages /Count '+jpegs.length+' /Kids ['+jpegs.map((_,i)=>(3+i*3)+' 0 R').join(' ')+'] >>');
+  jpegs.forEach((data,i)=>{
+    const page=3+i*3,content=page+1,img=page+2;
+    object(page,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.276 841.89] /Resources << /XObject << /R '+img+' 0 R >> >> /Contents '+content+' 0 R >>');
+    const stream='q 595.276 0 0 841.89 0 0 cm /R Do Q\n';
+    object(content,'<< /Length '+enc.encode(stream).length+' >>\nstream\n'+stream+'endstream');
+    const raw=atob(data.split(',')[1]),bytes=Uint8Array.from(raw,x=>x.charCodeAt(0));
+    offsets[img]=size;put(img+' 0 obj\n<< /Type /XObject /Subtype /Image /Width 1240 /Height 1754 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+bytes.length+' >>\nstream\n');put(bytes);put('\nendstream\nendobj\n');
+  });
+  const xref=size,count=3+jpegs.length*3;put('xref\n0 '+count+'\n0000000000 65535 f \n');
+  for(let i=1;i<count;i++)put(String(offsets[i]).padStart(10,'0')+' 00000 n \n');
+  put('trailer\n<< /Size '+count+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF');
+  return new Blob(chunks,{type:'application/pdf'});
+}
+async function openReceiptSheet(entry){
+  if(!['申請済','未処理'].includes(entry.status))return;
+  closeViewer();closeReceiptSheet();
+  $('receipt-sheet').hidden=false;document.body.style.overflow='hidden';
+  try{
+    // 原本貼付用。領収書画像は取得も印字もしない。1申請につき空欄付き台紙1枚。
+    const canvas=makeSheetPage(entry,null,1,1),data=canvas.toDataURL('image/jpeg',.93);
+    const image=new Image();image.src=data;image.alt='領収書貼付台紙（原本貼付用の空欄）';$('sheet-pages').append(image);
+    canvas.width=canvas.height=1;
+    sheetBlobUrl=URL.createObjectURL(mountingPdf([data]));
+    $('sheet-pdf').href=sheetBlobUrl;$('sheet-pdf').hidden=false;
+    $('sheet-save').href=sheetBlobUrl;$('sheet-save').download='領収書貼付台紙_'+(entry.applicationNumber||'未採番')+'.pdf';$('sheet-save').hidden=false;
+    $('sheet-print').disabled=false;
+    message('sheet-message','原本を貼る空欄付きの台紙です。レシート画像は印字しません。iPhoneは「台紙PDFを開く」から共有→プリントを選べます。');
+  }catch(error){message('sheet-message',errorText(error)+' 閉じてからもう一度お試しください。');$('sheet-pages').replaceChildren();}
+}
+
+$('sheet-close').onclick=closeReceiptSheet;$('sheet-print').onclick=()=>window.print();$('viewer-sheet').onclick=()=>{if(viewerEntry)openReceiptSheet(viewerEntry);};document.addEventListener('keydown',e=>{if(e.key==='Escape')closeReceiptSheet();});
+bind();$('expenseDate').value=today();syncControls();
+// Re-authenticate explicitly on every newly opened page; do not restore a previous employee automatically.
+stored('');
+</script></body></html>
