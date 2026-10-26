@@ -1,6 +1,14 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><base target="_top"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>アニマ経費申請</title>
+<link rel="apple-touch-icon" href="./keihi-icon.png?v=20261024">
+<link rel="icon" type="image/png" href="./keihi-icon.png?v=20261024">
+<meta name="apple-mobile-web-app-title" content="経費申請">
+
 <style>
+.record.original-received{background:#fff0d5;border-color:#dd9b3f}.admin-check{display:flex;align-items:center;gap:12px;min-height:52px;font-weight:700}.admin-check input{width:24px;height:24px;accent-color:#b86800}#admin-user{overflow-wrap:anywhere}
+
+[aria-invalid="true"]{border:2px solid #ac2f25!important;background:#fff6f5!important}.field-error{color:#ac2f25;font-size:14px;margin:6px 0}.viewer-head a,.viewer-head button{min-height:44px}
+
   :root {
     --bg: #f4f8fc;
     --navy-900: #1c3a5c;
@@ -431,10 +439,14 @@ dialog.ocr-complete{width:calc(100% - 32px);max-width:420px;border:2px solid var
 @media print{@page{size:A4 portrait;margin:0}html,body{margin:0!important;padding:0!important;overflow:visible!important;background:white!important}body>:not(#receipt-sheet){display:none!important}#receipt-sheet{position:static!important;padding:0!important;overflow:visible!important;background:white!important}#receipt-sheet .sheet-toolbar{display:none!important}#sheet-pages{max-width:none!important;margin:0!important}#sheet-pages img{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always}#sheet-pages img:last-child{break-after:auto;page-break-after:auto}}
 </style></head><body>
 <main class="app"><header class="header-band"><span class="chip">経費申請</span><h1>（株）アニマ社員経費</h1><p class="subtitle">レシートの写真・PDFから経費を登録</p></header>
-<section class="entry-card" id="login-panel"><h2>社員ログイン</h2><form id="login-form"><div class="field"><label for="login-no">社員番号</label><input id="login-no" type="text" inputmode="numeric" autocomplete="username" required></div><div class="field"><label for="login-pin">携帯電話番号の下4桁</label><input id="login-pin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="current-password" required></div><button class="submit-btn" id="login-button">ログインする</button><p class="message" id="login-message" role="status"></p></form></section>
+<section class="entry-card" id="login-panel"><h2>社員ログイン</h2><form id="login-form"><div class="field"><label for="login-no">社員番号</label><input id="login-no" type="text" inputmode="numeric" autocomplete="username" required></div><div class="field"><label for="login-pin">携帯電話番号の下4桁</label><input id="login-pin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="current-password" required></div><button class="submit-btn" id="login-button">ログインする</button><p class="message" id="login-message" role="status"></p></form><button id="admin-open" class="plain-btn" type="button">管理者ログイン（原本受領）</button></section>
+<section class="entry-card" id="admin-panel" hidden><h2>管理者・原本受領チェック</h2>
+<div id="admin-login"><form id="admin-login-form"><div class="field"><label for="admin-email">管理者メールアドレス</label><input id="admin-email" type="email" autocomplete="username" required></div><div class="field"><label for="admin-password">管理者パスワード</label><input id="admin-password" type="password" autocomplete="current-password" required></div><button id="admin-login-button" class="submit-btn" type="submit">管理者ログイン</button></form><button id="admin-back" class="plain-btn" type="button">社員ログインへ戻る</button></div>
+<p id="admin-message" class="message" role="status" aria-live="polite"></p>
+<div id="admin-workspace" hidden><div class="top-actions"><span id="admin-user"></span><button id="admin-logout" class="plain-btn" type="button">管理者ログアウト</button></div><p class="note">原本を受け取った申請にチェックしてください。オレンジ背景が受領済みです。社員の画面にも同じ色が反映されます。</p><div class="field"><label for="admin-employee">社員</label><select id="admin-employee"><option value="">全社員</option></select></div><div class="field"><label for="admin-month">経費計上月</label><select id="admin-month"><option value="">全計上月</option></select></div><div class="field"><label for="admin-status">表示する申請</label><select id="admin-status"><option value="all">すべて</option><option value="no">原本未受領</option><option value="yes">原本受領済み</option></select></div><button id="admin-refresh" class="plain-btn" type="button">一覧を更新</button><p id="admin-count" class="note"></p><div id="admin-list"></div></div></section>
 <div id="workspace" hidden><p id="load-status" class="note" role="status"></p><button type="button" class="plain-btn" id="load-retry" hidden>画面を再読み込み</button><div class="top-actions"><span id="user-label"></span><button class="plain-btn" id="logout-button" type="button">ログアウト</button></div>
 <aside id="closing" class="closing"><strong>今月の経費締め</strong><b id="closing-date">確認中…</b><p id="closing-month"></p><button type="button" class="plain-btn" id="closing-retry" hidden>締め日を再確認</button></aside>
-<section class="entry-card"><h2>新規申請</h2><form id="expense-form"><fieldset id="entry-fields" disabled style="border:0;padding:0;margin:0;min-width:0">
+<section class="entry-card"><h2>新規申請</h2><form id="expense-form" novalidate><fieldset id="entry-fields" disabled style="border:0;padding:0;margin:0;min-width:0">
 <div class="field"><label for="employeeNo">社員番号・氏名</label><input id="employeeNo" type="text" readonly></div>
 <div class="field"><label for="receipt">① レシートの読み取り</label><div class="receipt-upload"><div id="receipt-preview" class="receipt-preview">タップして撮影・写真・PDFを選択</div><input type="file" id="receipt" accept="image/*,application/pdf,.pdf"></div><div class="actions" style="margin-top:10px"><button class="plain-btn" id="take-photo" type="button">写真を撮る</button><button class="plain-btn" id="pick-album" type="button">アルバムから</button><button class="plain-btn" id="pick-pdf" type="button">PDFを選ぶ</button></div><input id="camera-file" type="file" accept="image/*" capture="environment" hidden><input id="album-file" type="file" accept="image/*" hidden><input id="pdf-file" type="file" accept="application/pdf,.pdf" hidden><p class="note">写真・PDFは6MB以内。読み取り後、各項目をご確認ください。</p><button id="preview-action" class="plain-btn" type="button" hidden>選んだ写真・PDFを確認</button><p id="ocr-status" class="note" role="status"></p><div class="actions"><button class="plain-btn" id="ocr-retry" type="button" hidden>もう一度読み取る</button><button class="plain-btn" id="ocr-stop" type="button" hidden>手入力に切り替える</button><button class="plain-btn danger-btn" id="clear-receipt" type="button" hidden>選択を取り消す</button></div></div>
 <div class="field"><label for="expenseDate">② 利用日（自動入力・修正可）</label><input id="expenseDate" type="date" required></div>
@@ -444,19 +456,19 @@ dialog.ocr-complete{width:calc(100% - 32px);max-width:420px;border:2px solid var
 <div class="field"><label for="amount">⑥ 金額（自動入力・修正可）</label><div class="amount-wrap"><span class="yen">¥</span><input type="text" id="amount" inputmode="numeric" pattern="[0-9,]*" required placeholder="0"></div></div>
 <div class="field"><label for="category">店名・内容（自動入力・修正可）</label><input type="text" id="category" placeholder="店名・内容"></div>
 <div class="two"><div class="field"><label for="tax8">8%対象金額（税込）</label><input type="text" id="tax8" inputmode="numeric" pattern="[0-9,]*" placeholder="0"></div><div class="field"><label for="tax10">10%対象金額（税込）</label><input type="text" id="tax10" inputmode="numeric" pattern="[0-9,]*" placeholder="0"></div></div>
-<button class="submit-btn" id="draft-button" type="submit">⑦ 下書き登録する</button><p class="note">入力内容を確認して登録してください。下書き登録後に、履歴から申請できます。</p><p class="message" id="form-message" role="status"></p><button type="button" class="plain-btn" id="check-save" hidden>保存結果を確認する</button></fieldset></form></section>
-<section id="draft-section"><h2>下書き（未申請）</h2><p class="note">内容を確認して申請してください。不要な下書きは取り消せます。</p><p class="message" id="draft-message" role="status"></p><div id="draft-list"></div></section><section class="history"><div class="top-actions"><h2 style="margin:0">申請履歴</h2><button class="plain-btn" id="refresh" type="button">履歴を更新</button></div><p class="note">写真・PDFは会社用の保存先から表示します。</p><p class="message" id="history-message" role="status"></p><div id="entries-list"></div></section><p class="note" style="text-align:center">会社用・下書き取消／空欄台紙 2026.10.24-R9・入口版</p></div></main>
-<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-labelledby="viewer-title" hidden><div class="viewer-head"><strong id="viewer-title">領収書</strong><a id="download-receipt" class="plain-btn" download="領収書.pdf">保存</a><button type="button" class="plain-btn" id="viewer-sheet" hidden>レシートを台紙に貼る</button><button type="button" class="plain-btn" id="viewer-close">閉じる</button></div><div id="pdf-controls" class="pdf-controls" hidden><button type="button" class="plain-btn" id="pdf-prev">前へ</button><span id="pdf-page"></span><button type="button" class="plain-btn" id="pdf-next">次へ</button><button type="button" class="plain-btn" id="pdf-minus">−</button><span id="pdf-zoom">100%</span><button type="button" class="plain-btn" id="pdf-plus">＋</button></div><div class="viewer-body" id="viewer-body"><p id="viewer-message" class="message" role="status"></p><div id="viewer-content"></div></div></div>
+<button class="submit-btn" id="draft-button" type="submit">⑦ 下書き登録する</button><p class="note">入力内容を確認して登録してください。下書き登録後に、履歴から申請できます。</p><p class="message" id="form-message" role="alert" aria-live="assertive" tabindex="-1"></p><button type="button" class="plain-btn" id="check-save" hidden>保存結果を確認する</button></fieldset></form></section>
+<section id="draft-section"><h2>下書き（未申請）</h2><p class="note">内容を確認して申請してください。不要な下書きは取り消せます。</p><p class="message" id="draft-message" role="status"></p><div id="draft-list"></div></section><section class="history"><div class="top-actions"><h2 style="margin:0">申請履歴</h2><button class="plain-btn" id="refresh" type="button">履歴を更新</button></div><p class="note">写真・PDFは会社用の保存先から表示します。</p><p class="message" id="history-message" role="status"></p><div id="entries-list"></div></section><p class="note" style="text-align:center">会社用・下書き取消／空欄台紙 2026.10.26-R11・原本受領管理</p></div></main>
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-labelledby="viewer-title" hidden><div class="viewer-head"><strong id="viewer-title">領収書</strong><a id="open-receipt" class="plain-btn" target="_blank" rel="noopener" hidden>原本を開く</a><button id="share-receipt" class="plain-btn" type="button" disabled>共有・印刷</button><a id="download-receipt" class="plain-btn" download="領収書.pdf">保存</a><button type="button" class="plain-btn" id="viewer-sheet" hidden>レシートを台紙に貼る</button><button type="button" class="plain-btn" id="viewer-close">閉じる</button></div><div id="pdf-controls" class="pdf-controls" hidden><button type="button" class="plain-btn" id="pdf-prev">前へ</button><span id="pdf-page"></span><button type="button" class="plain-btn" id="pdf-next">次へ</button><button type="button" class="plain-btn" id="pdf-minus">−</button><span id="pdf-zoom">100%</span><button type="button" class="plain-btn" id="pdf-plus">＋</button></div><div class="viewer-body" id="viewer-body"><p id="viewer-message" class="message" role="status"></p><div id="viewer-content"></div></div></div>
 
 <dialog id="ocr-complete-dialog" class="ocr-complete" aria-labelledby="ocr-complete-title" aria-describedby="ocr-complete-detail"><h2 id="ocr-complete-title">読み取りが完了しました</h2><p id="ocr-complete-detail"></p><button id="ocr-complete-ok" type="button" class="submit-btn">内容を確認する</button></dialog>
-<section id="receipt-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden><div class="sheet-toolbar"><strong id="sheet-title">領収書貼付台紙</strong><div class="actions"><a id="sheet-pdf" class="plain-btn" target="_blank" rel="noopener" hidden>台紙PDFを開く</a><a id="sheet-save" class="plain-btn" hidden>台紙PDFを保存</a><button id="sheet-print" class="plain-btn" type="button" disabled>台紙を印刷</button><button id="sheet-close" class="plain-btn" type="button">× 閉じる</button></div><p id="sheet-message" class="note" role="status"></p></div><div id="sheet-pages"></div></section>
+<section id="receipt-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden><div class="sheet-toolbar"><strong id="sheet-title">領収書貼付台紙</strong><div class="actions"><a id="sheet-pdf" class="plain-btn" target="_blank" rel="noopener" hidden>台紙PDFを開く</a><a id="sheet-save" class="plain-btn" hidden>台紙PDFを保存</a><button id="sheet-share" class="plain-btn" type="button" disabled>共有・印刷</button><button id="sheet-print" class="plain-btn" type="button" disabled>台紙を印刷</button><button id="sheet-close" class="plain-btn" type="button">× 閉じる</button></div><p id="sheet-message" class="note" role="status"></p></div><div id="sheet-pages"></div></section>
 <script>
 'use strict';
 const $ = id => document.getElementById(id);
 const money = value => Number(value || 0).toLocaleString('ja-JP');
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const state = { token:'', employeeNo:'', epoch:0, entries:[], ready:false, login:false, loading:false, saving:false, changing:false, receiptVersion:0, preparing:false, scanning:false, receipt:null, operationId:'' };
-let pdfDoc=null, pdfPage=1, pdfZoom=1, pdfTask=null, viewerSequence=0, pdfLibrary=null, blobUrl='';
+const state = { token:'', employeeNo:'', epoch:0, entries:[], ready:false, login:false, loading:false, saving:false, changing:false, receiptVersion:0, preparing:false, scanning:false, receipt:null, operationId:'', revision:0 };
+let pdfLoadingTask=null,pdfDoc=null, pdfPage=1, pdfZoom=1, pdfTask=null, viewerSequence=0, pdfLibrary=null, blobUrl='';
 function message(id,text) { $(id).textContent=text; }
 function errorText(error) { return String(error?.message || error || '操作に失敗しました'); }
 function today() { return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()); }
@@ -470,7 +482,7 @@ function timed(promise,ms,text) {
 }
 const COMPANY_API_URL = "https://script.google.com/macros/s/AKfycbwL_19ZAF9qMp-_8TqOQbHGP2SPSN6RdPuzJbIoeYeDXONgBqhzF0GUoOvRnV-hloAl0A/exec";
 async function call(name,args,ms=45000) {
-  if (!['loginExpense','expenseRpc','health'].includes(name)) throw new Error('許可されていない操作です');
+  if (!['loginExpense','expenseRpc','health','loginReceiptAdmin','receiptAdminRpc'].includes(name)) throw new Error('許可されていない操作です');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ms);
   try {
@@ -521,6 +533,7 @@ function syncControls() {
   $('refresh').disabled=state.loading || locked;
   $('logout-button').disabled=locked;
   $('check-save').disabled=locked;
+  for(const button of document.querySelectorAll('.record button'))button.disabled=locked || button.dataset.unavailable==='true';
 }
 function clearReceipt(ask=false) {
   if(state.saving || state.changing)return;
@@ -534,6 +547,7 @@ function clearReceipt(ask=false) {
   message('receipt-preview','タップして撮影・写真・PDFを選択');message('ocr-status','');$('check-save').hidden=true;syncControls();
 }
 function resetForm() {
+  for(const node of $('expense-form').querySelectorAll('[aria-invalid]'))clearFieldError(node);
   const employee=$('employeeNo').value;
   clearReceipt();$('expense-form').reset();$('employeeNo').value=employee;$('expenseDate').value=today();syncControls();
 }
@@ -560,10 +574,10 @@ async function refreshClosing(epoch=state.epoch) {
   }
 }
 async function load() {
-  if(state.loading)return;
-  const epoch=state.epoch;state.loading=true;message('load-status','振り分け先と申請履歴を読み込んでいます…');$('load-retry').hidden=true;syncControls();
+  if(state.loading || state.saving || state.changing)return;
+  const epoch=state.epoch,revision=state.revision;state.loading=true;message('load-status','振り分け先と申請履歴を読み込んでいます…');$('load-retry').hidden=true;syncControls();
   try {
-    const data=await rpc('load');if(epoch!==state.epoch)return;
+    const data=await rpc('load');if(epoch!==state.epoch)return;if(revision!==state.revision){message('load-status','登録・取消の結果を表示しています。');return;}
     if(!data || !Array.isArray(data.expenses) || !Array.isArray(data.projects))throw new Error('画面のデータを確認できませんでした。再読み込みしてください。');
     if(state.employeeNo && String(data.employeeNo)!==state.employeeNo) {
       showLogin('ログイン情報と社員番号が一致しません。再度ログインしてください。');return;
@@ -607,7 +621,7 @@ async function preparePhoto(file) {
   const scale=Math.min(1,2400/Math.max(image.naturalWidth,image.naturalHeight)),canvas=document.createElement('canvas');
   canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
   const context=canvas.getContext('2d');context.fillStyle='white';context.fillRect(0,0,canvas.width,canvas.height);context.drawImage(image,0,0,canvas.width,canvas.height);
-  const result=canvas.toDataURL('image/jpeg',.88);
+  let result;try{result=canvas.toDataURL('image/jpeg',.88);}finally{canvas.width=canvas.height=1;image.src='';}
   if(result.length>8*1024*1024)throw new Error('写真が大きすぎます。解像度を下げて選び直してください');
   return result;
 }
@@ -674,11 +688,42 @@ function stopOcr() {
   message('ocr-status','自動入力を中止しました。②〜⑥を手入力してください。');syncControls();
 }
 function number(id) { return Number($(id).value.replace(/,/g,'').trim() || 0); }
+function clearFieldError(node){
+  node.removeAttribute('aria-invalid');node.removeAttribute('aria-describedby');
+  document.getElementById(node.id+'-error')?.remove();
+}
+function validateDraft(){
+  const errors=[];
+  for(const id of ['receipt','expenseDate','projectName','memo2','paymentMethod','amount','tax8','tax10'])clearFieldError($(id));
+  if(!state.receipt)errors.push(['receipt','写真またはPDFを選択してください。']);
+  if(!$('expenseDate').value || !$('expenseDate').validity.valid)errors.push(['expenseDate','利用日を入力してください。']);
+  if(!$('projectName').value)errors.push(['projectName','経費の振り分け先（現場名・事務所など）を選択してください。']);
+  if($('projectName').value==='一覧にない（摘要に記入）' && !$('memo2').value.trim() && !$('memo3').value.trim())errors.push(['memo2','一覧にない振り分け先を摘要2または摘要3に記入してください。']);
+  if(!$('paymentMethod').value)errors.push(['paymentMethod','支払方法を選択してください。']);
+  const amount=number('amount'),tax8=number('tax8'),tax10=number('tax10');
+  if(!/^[0-9,]+$/.test($('amount').value.trim()) || !Number.isSafeInteger(amount) || amount<=0 || amount>100000000)errors.push(['amount','金額を1円以上の整数で入力してください。']);
+  for(const id of ['tax8','tax10'])if(!/^[0-9,]*$/.test($(id).value.trim()) || !Number.isSafeInteger(number(id)) || number(id)<0)errors.push([id,'税率別の対象金額は0円以上の整数で入力してください。']);
+  if(Number.isFinite(tax8+tax10) && tax8+tax10>amount)errors.push(['tax8','8%・10%対象金額の合計が支払金額を超えています。']);
+  if(!errors.length)return true;
+  for(const [id,text] of errors){
+    const node=$(id),note=document.createElement('p');note.id=id+'-error';note.className='field-error';note.textContent=text;
+    node.setAttribute('aria-invalid','true');node.setAttribute('aria-describedby',note.id);
+    (node.closest('.field')||node.parentElement).append(note);
+  }
+  message('form-message','下書きを登録できません。\n'+errors.map(x=>'・'+x[1]).join('\n'));
+  const first=$(errors[0][0]);try{first.scrollIntoView({behavior:'smooth',block:'center'});first.focus({preventScroll:true});}catch(_){}
+  return false;
+}
+function entryKey(entry){
+  return JSON.stringify([String(entry.employeeNo),String(entry.id),String(entry.applicationNumber||'').replace(/^0+(?=\d)/,'')]);
+}
+function entryRequest(entry){return {id:entry.id,applicationNumber:entry.applicationNumber||''};}
+
 function acceptSavedDraft(result,id) {
   const entry=result?.entry;
   if(!entry || entry.id!==id || String(entry.employeeNo)!==state.employeeNo)throw new Error('本人の保存結果を確認できませんでした。管理者に連絡してください。');
   // Mark completion before touching the form or drawing history.
-  state.saving=false;state.entries=state.entries.filter(item=>item.id!==entry.id).concat(entry);
+  state.saving=false;state.entries=state.entries.filter(item=>entryKey(item)!==entryKey(entry)).concat(entry);
   resetForm();syncControls();
   const done='下書きを登録しました。申請番号：'+(entry.applicationNumber || '履歴をご確認ください')+'。';
   message('form-message',done+(result.warning || '履歴で確認して申請してください。'));
@@ -727,10 +772,9 @@ async function checkSaveResult() {
 }
 async function saveDraft(event) {
   event.preventDefault();if(state.saving || state.changing || state.preparing || state.scanning || !state.ready)return;
-  if(!state.receipt){message('form-message','写真またはPDFを選択してください。');return;}
-  if($('projectName').value==='一覧にない（摘要に記入）' && !$('memo2').value.trim() && !$('memo3').value.trim()){message('form-message','一覧にない振り分け先は、摘要2または3に記入してください。');$('memo2').focus();return;}
+  if(!validateDraft())return;
   const payload={id:state.operationId || (state.operationId=newId()),photoData:state.receipt.data,previewPhotoData:state.receipt.preview,expenseDate:$('expenseDate').value,projectName:$('projectName').value,paymentMethod:$('paymentMethod').value,amount:number('amount'),category:$('category').value,memo1:$('memo1').value,memo2:$('memo2').value,memo3:$('memo3').value,tax8:number('tax8'),tax10:number('tax10')};
-  const epoch=state.epoch;state.saving=true;$('check-save').hidden=true;message('form-message','会社の保存先に下書きを登録しています…');syncControls();
+  const epoch=state.epoch;state.revision++;state.saving=true;$('check-save').hidden=true;message('form-message','会社の保存先に下書きを登録しています…');syncControls();
   try {
     const result=await saveWithVerification(payload);if(epoch!==state.epoch)return;
     acceptSavedDraft(result,payload.id);
@@ -752,11 +796,11 @@ function renderEntries() {
   if(!visible.some(entry=>entry.status==='下書き'))drafts.textContent='下書きはありません。';
   if(!visible.some(entry=>['申請済','未処理'].includes(entry.status)))list.textContent='申請履歴はありません。';
   [...visible].reverse().forEach(entry=>{
-    const card=document.createElement('article');card.className='record';
+    const card=document.createElement('article');card.className='record'+(entry.originalReceived?' original-received':'');
     const destinations=[...new Set([entry.siteName,entry.projectName].filter(Boolean))].join(' ／ ');
     card.innerHTML='<p class="note">申請番号：'+esc(entry.applicationNumber || '確認中')+'</p><span class="badge '+(entry.status==='申請取消'?'cancelled':'')+'">'+esc(entry.status)+'</span><p class="note">'+esc(entry.expenseDate)+' ・ '+esc(entry.paymentMethod)+'</p><h3>'+esc(entry.category || entry.memo1 || '経費')+'</h3><p class="amount">¥'+money(entry.amount)+'</p><p>経費の振り分け先：'+esc(destinations)+'</p><p>'+esc([entry.memo1,entry.memo2,entry.memo3].filter(Boolean).join(' ／ '))+'</p><p class="note">経費計上月：'+esc(entry.accountingMonth || '申請時に確定')+'</p>';
     const actions=document.createElement('div');actions.className='actions';
-    const view=recordButton(entry.hasReceipt?'写真・PDFを見る':'領収書の保存先なし',()=>openStoredReceipt(entry));view.disabled=!entry.hasReceipt || state.changing || state.saving;actions.append(view);
+    const view=recordButton(entry.hasReceipt?'写真・PDFを見る':'領収書の保存先なし',()=>openStoredReceipt(entry));view.disabled=!entry.hasReceipt || state.changing || state.saving;view.dataset.unavailable=String(!entry.hasReceipt);actions.append(view);
     if(['申請済','未処理'].includes(entry.status))actions.append(recordButton('レシートを台紙に貼る',()=>openReceiptSheet(entry)));
     if(entry.status==='下書き'){actions.append(recordButton('この内容で申請',()=>changeStatus('submit',entry)));actions.append(recordButton('下書き取り消し',()=>changeStatus('cancel',entry),true));}
     if(['申請済','未処理'].includes(entry.status))actions.append(recordButton('申請取り消し',()=>changeStatus('cancel',entry),true));
@@ -766,22 +810,26 @@ function renderEntries() {
 }
 async function changeStatus(action,entry) {
   if(state.saving || state.changing)return;
+  if(state.entries.filter(x=>entryKey(x)===entryKey(entry)).length!==1){message('history-message','同じ申請番号が複数あるため、処理を停止しました。管理者に連絡してください。');return;}
   const draft=entry.status==='下書き',statusMessage=draft?'draft-message':'history-message';
   if(!confirm(action==='cancel'?(draft?'この下書きを取り消しますか？下書き一覧から消えます。':'申請を取り消しますか？取消記録と領収書は残ります。'):'経理担当者に申請メールを送ります。よろしいですか？'))return;
-  const epoch=state.epoch;state.changing=true;syncControls();renderEntries();message(statusMessage,action==='cancel'?'取り消しを登録しています…':'申請を登録しています…');
+  const epoch=state.epoch;state.revision++;state.changing=true;syncControls();renderEntries();message(statusMessage,action==='cancel'?'取り消しを登録しています…':'申請を登録しています…');
   try {
-    const result=await rpc(action,{id:entry.id},90000);if(epoch!==state.epoch)return;
-    if(!result?.entry)throw new Error('処理結果を確認できませんでした');
+    const result=await rpc(action,entryRequest(entry),90000);if(epoch!==state.epoch)return;
+    if(!result?.entry || entryKey(result.entry)!==entryKey(entry))throw new Error('選択した申請と処理結果が一致しません。履歴を更新してください。');
     state.entries=action==='cancel' && result.entry.status==='申請取消'
-      ? state.entries.filter(x=>x.id!==entry.id)
-      : state.entries.map(x=>x.id===entry.id?result.entry:x);
+      ? state.entries.filter(x=>entryKey(x)!==entryKey(entry))
+      : state.entries.map(x=>entryKey(x)===entryKey(entry)?result.entry:x);
     message(statusMessage,result.warning || (action==='cancel'?(draft?'下書きを取り消しました。':'申請を取り消しました。経理へ通知しました。'):'申請しました。経理へ通知しました。'));
   }catch(error){if(epoch===state.epoch)message(statusMessage,errorText(error)+' 履歴を更新して処理結果を確認してください。');}
   finally {if(epoch===state.epoch){state.changing=false;syncControls();renderEntries();}}
 }
 function closeViewer() {
+  receiptShareFile=null;$('share-receipt').disabled=true;$('open-receipt').hidden=true;$('open-receipt').removeAttribute('href');
   viewerSequence++;viewerEntry=null;$('viewer-sheet').hidden=true;$('viewer').hidden=true;document.body.style.overflow='';
-  if(pdfTask)pdfTask.cancel();pdfTask=null;if(pdfDoc)pdfDoc.destroy();pdfDoc=null;
+  if(pdfLoadingTask){Promise.resolve(pdfLoadingTask.destroy()).catch(()=>{});pdfLoadingTask=null;}
+  if(pdfTask)pdfTask.cancel();pdfTask=null;if(pdfDoc)Promise.resolve(pdfDoc.destroy()).catch(()=>{});pdfDoc=null;
+  for(const c of $('viewer-content').querySelectorAll('canvas'))c.width=c.height=1;
   $('viewer-content').replaceChildren();if(blobUrl)URL.revokeObjectURL(blobUrl);blobUrl='';$('download-receipt').removeAttribute('href');
 }
 function startViewer() {
@@ -793,13 +841,14 @@ async function showReceipt(data,name,sequence,preview='') {
 }
 async function openStoredReceipt(entry) {
   const sequence=startViewer();viewerEntry=entry;$('viewer-sheet').hidden=!['申請済','未処理'].includes(entry.status);
-  try {const result=await rpc('receipt',{id:entry.id});if(sequence!==viewerSequence)return;await showReceipt(result.dataUrl,result.name,sequence,result.previewDataUrl);}
+  try {const result=await rpc('receipt',entryRequest(entry));if(sequence!==viewerSequence)return;await showReceipt(result.dataUrl,result.name,sequence,result.previewDataUrl);}
   catch(error){if(sequence===viewerSequence)message('viewer-message',errorText(error));}
 }
 function bind() {
   $('login-form').addEventListener('submit',login);$('expense-form').addEventListener('submit',saveDraft);
   for(const id of ['receipt','camera-file','album-file','pdf-file']) $(id).onchange=()=>handleReceiptFile($(id).files[0]);
   for(const [button,input] of [['take-photo','camera-file'],['pick-album','album-file'],['pick-pdf','pdf-file']]) $(button).onclick=()=>{$(input).value='';$(input).click();};
+  for(const node of $('expense-form').querySelectorAll('input,select,textarea')){node.addEventListener('input',()=>clearFieldError(node));node.addEventListener('change',()=>clearFieldError(node));}
   $('check-save').onclick=checkSaveResult;
   $('ocr-complete-ok').onclick=()=>{$('ocr-complete-dialog').close();$('expenseDate').scrollIntoView({behavior:'smooth',block:'center'});$('expenseDate').focus({preventScroll:true});};
   $('clear-receipt').onclick=()=>clearReceipt(true);$('ocr-stop').onclick=stopOcr;$('ocr-retry').onclick=()=>runOcr();
@@ -826,24 +875,24 @@ async function preparePdfImages(dataUrl){
  const lib=await getPdfLibrary(),bytes=Uint8Array.from(atob(dataUrl.split(',')[1]),c=>c.charCodeAt(0));
  const doc=await lib.getDocument({data:bytes,cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/standard_fonts/',wasmUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/wasm/',isEvalSupported:false}).promise;
  try{const images=[];let preview='';const count=doc.numPages<=5?doc.numPages:1;
- for(let i=1;i<=count;i++){const page=await doc.getPage(i),base=page.getViewport({scale:1}),viewport=page.getViewport({scale:Math.min(3,3200/Math.max(base.width,base.height))}),canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);const ctx=canvas.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,canvas.width,canvas.height);await page.render({canvasContext:ctx,viewport}).promise;const crop=cropReceiptCanvas(canvas);let image=crop.toDataURL('image/jpeg',.88);if(image.length>1400000)image=crop.toDataURL('image/jpeg',.65);images.push(image);if(i===1)preview=image;}
+ for(let i=1;i<=count;i++){const page=await doc.getPage(i),base=page.getViewport({scale:1}),viewport=page.getViewport({scale:Math.min(3,3200/Math.max(base.width,base.height))}),canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);const ctx=canvas.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,canvas.width,canvas.height);await page.render({canvasContext:ctx,viewport}).promise;const crop=cropReceiptCanvas(canvas);let image=crop.toDataURL('image/jpeg',.88);if(image.length>1400000)image=crop.toDataURL('image/jpeg',.65);images.push(image);if(i===1)preview=image;if(crop!==canvas)crop.width=crop.height=1;canvas.width=canvas.height=1;page.cleanup();}
  return {images:doc.numPages<=5?images:[],preview,pages:doc.numPages};
  }finally{await doc.destroy();}
 }
 
 async function getPdfLibrary(){if(!pdfLibrary)pdfLibrary=timed(import('https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/legacy/build/pdf.min.mjs'),20000,'PDF表示の準備が時間切れになりました').then(lib=>{lib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/legacy/build/pdf.worker.min.mjs';return lib;}).catch(e=>{pdfLibrary=null;throw new Error('PDF表示用のプログラムを読み込めませんでした。通信環境を確認し、もう一度開いてください。');});return pdfLibrary;}
-async function displayReceipt(dataUrl,name,seq,preview=''){const parts=dataUrl.split(',');const binary=atob(parts[1]);const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));const mime=parts[0].slice(5).split(';')[0];blobUrl=URL.createObjectURL(new Blob([bytes],{type:mime}));$('download-receipt').href=blobUrl;$('download-receipt').download=name||'領収書';$('viewer-title').textContent=mime==='application/pdf'?'領収書PDF':'領収書の写真';if(mime==='application/pdf'){if(preview){const img=new Image();img.src=preview;img.alt='PDF先頭ページ';$('viewer-content').replaceChildren(img);$('viewer-message').textContent='PDFの先頭ページです。全ページを準備しています…';}const lib=await getPdfLibrary();if(seq!==viewerSequence)return;const task=lib.getDocument({data:bytes,cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/standard_fonts/',wasmUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/wasm/',isEvalSupported:false});const doc=await task.promise;if(seq!==viewerSequence){doc.destroy();return;}pdfDoc=doc;pdfPage=1;pdfZoom=1;$('pdf-controls').hidden=false;await renderPdf(seq);}else{const img=new Image();img.src=dataUrl;img.alt='領収書の写真';$('viewer-content').replaceChildren(img);$('viewer-message').textContent='';}}
+async function displayReceipt(dataUrl,name,seq,preview=''){const parts=dataUrl.split(',');const binary=atob(parts[1]);const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));const mime=parts[0].slice(5).split(';')[0];const original=new Blob([bytes],{type:mime});blobUrl=URL.createObjectURL(original);receiptShareFile=typeof File==='function'?new File([original],name||'領収書.pdf',{type:mime}):null;$('open-receipt').href=blobUrl;$('open-receipt').hidden=false;$('share-receipt').disabled=false;$('download-receipt').href=blobUrl;$('download-receipt').download=name||'領収書';$('viewer-title').textContent=mime==='application/pdf'?'領収書PDF':'領収書の写真';if(mime==='application/pdf'){if(preview){const img=new Image();img.src=preview;img.alt='PDF先頭ページ';$('viewer-content').replaceChildren(img);$('viewer-message').textContent='PDFの先頭ページです。全ページを準備しています…';}const lib=await getPdfLibrary();if(seq!==viewerSequence)return;const task=lib.getDocument({data:bytes,cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/standard_fonts/',wasmUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/wasm/',isEvalSupported:false});pdfLoadingTask=task;let doc;try{doc=await task.promise;}finally{if(pdfLoadingTask===task)pdfLoadingTask=null;}if(seq!==viewerSequence){doc.destroy();return;}pdfDoc=doc;pdfPage=1;pdfZoom=1;$('pdf-controls').hidden=false;await renderPdf(seq);}else{const img=new Image();img.src=dataUrl;img.alt='領収書の写真';$('viewer-content').replaceChildren(img);$('viewer-message').textContent='';}}
 async function renderPdf(seq=viewerSequence){if(!pdfDoc)return;if(pdfTask){const prior=pdfTask;prior.cancel();try{await prior.promise;}catch(e){}if(seq!==viewerSequence)return;}const page=await pdfDoc.getPage(pdfPage);if(seq!==viewerSequence)return;const base=page.getViewport({scale:1});const width=Math.max(240,$('viewer-body').clientWidth-24);const scale=width/base.width*pdfZoom;const viewport=page.getViewport({scale});const dpr=Math.min(devicePixelRatio||1,2);const canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width*dpr);canvas.height=Math.ceil(viewport.height*dpr);canvas.style.width=viewport.width+'px';canvas.style.height=viewport.height+'px';$('viewer-content').replaceChildren(canvas);const task=page.render({canvasContext:canvas.getContext('2d'),viewport,transform:dpr===1?null:[dpr,0,0,dpr,0,0]});pdfTask=task;try{await task.promise;if(seq!==viewerSequence)return;$('viewer-message').textContent='';$('pdf-page').textContent=pdfPage+' / '+pdfDoc.numPages;$('pdf-zoom').textContent=Math.round(pdfZoom*100)+'%';$('pdf-prev').disabled=pdfPage<=1;$('pdf-next').disabled=pdfPage>=pdfDoc.numPages;}catch(e){if(e.name!=='RenderingCancelledException')$('viewer-message').textContent='PDFを表示できませんでした。保存してご確認ください。';}finally{if(pdfTask===task)pdfTask=null;}}
 function pdfChange(fn){fn();renderPdf().catch(e=>{$('viewer-message').textContent=errorText(e);});}
 $('pdf-prev').onclick=()=>pdfChange(()=>{pdfPage=Math.max(1,pdfPage-1);});$('pdf-next').onclick=()=>pdfChange(()=>{if(pdfDoc)pdfPage=Math.min(pdfDoc.numPages,pdfPage+1);});$('pdf-plus').onclick=()=>pdfChange(()=>{pdfZoom=Math.min(2.5,pdfZoom+.25);});$('pdf-minus').onclick=()=>pdfChange(()=>{pdfZoom=Math.max(.75,pdfZoom-.25);});
 
 // Receipt mounting sheets: local generation only; no submission/cancellation writes.
-let sheetSequence=0, sheetBlobUrl='', viewerEntry=null;
+let sheetSequence=0, sheetBlobUrl='', viewerEntry=null,receiptShareFile=null,sheetShareFile=null;
 function closeReceiptSheet(){
   sheetSequence++;$('receipt-sheet').hidden=true;$('sheet-pages').replaceChildren();
   if(sheetBlobUrl)URL.revokeObjectURL(sheetBlobUrl);sheetBlobUrl='';
   $('sheet-pdf').hidden=true;$('sheet-pdf').removeAttribute('href');$('sheet-save').hidden=true;$('sheet-save').removeAttribute('href');
-  $('sheet-print').disabled=true;document.body.style.overflow='';
+  $('sheet-print').disabled=true;sheetShareFile=null;$('sheet-share').disabled=true;document.body.style.overflow='';
 }
 function sheetDate(value){
   if(!value)return '記録なし';
@@ -914,7 +963,7 @@ async function openReceiptSheet(entry){
     const canvas=makeSheetPage(entry,null,1,1),data=canvas.toDataURL('image/jpeg',.93);
     const image=new Image();image.src=data;image.alt='領収書貼付台紙（原本貼付用の空欄）';$('sheet-pages').append(image);
     canvas.width=canvas.height=1;
-    sheetBlobUrl=URL.createObjectURL(mountingPdf([data]));
+    const pdf=mountingPdf([data]);sheetBlobUrl=URL.createObjectURL(pdf);sheetShareFile=typeof File==='function'?new File([pdf],'領収書貼付台紙_'+(entry.applicationNumber||'未採番')+'.pdf',{type:'application/pdf'}):null;$('sheet-share').disabled=false;
     $('sheet-pdf').href=sheetBlobUrl;$('sheet-pdf').hidden=false;
     $('sheet-save').href=sheetBlobUrl;$('sheet-save').download='領収書貼付台紙_'+(entry.applicationNumber||'未採番')+'.pdf';$('sheet-save').hidden=false;
     $('sheet-print').disabled=false;
@@ -922,7 +971,122 @@ async function openReceiptSheet(entry){
   }catch(error){message('sheet-message',errorText(error)+' 閉じてからもう一度お試しください。');$('sheet-pages').replaceChildren();}
 }
 
+function sharePrintFile(file,messageId,fallback){
+  if(!file){message(messageId,'ファイルの準備ができていません。'+fallback);return;}
+  try{
+    if(!navigator.share || !navigator.canShare || !navigator.canShare({files:[file]})){
+      message(messageId,'この画面では共有を開けません。'+fallback);return;
+    }
+    // Call immediately from the tap. Do not fetch or render before share().
+    navigator.share({files:[file]}).catch(error=>{if(error.name!=='AbortError')message(messageId,'共有を開けませんでした。'+fallback);});
+  }catch(error){message(messageId,'共有を開けませんでした。'+fallback);}
+}
+$('share-receipt').onclick=()=>sharePrintFile(receiptShareFile,'viewer-message','「原本を開く」→Safariの共有→プリントを選んでください。');
+$('sheet-share').onclick=()=>sharePrintFile(sheetShareFile,'sheet-message','「台紙PDFを開く」→Safariの共有→プリントを選んでください。');
+
 $('sheet-close').onclick=closeReceiptSheet;$('sheet-print').onclick=()=>window.print();$('viewer-sheet').onclick=()=>{if(viewerEntry)openReceiptSheet(viewerEntry);};document.addEventListener('keydown',e=>{if(e.key==='Escape')closeReceiptSheet();});
+const receiptAdmin={token:'',email:'',entries:[],busy:false,loading:false,epoch:0};
+function showReceiptAdmin(){
+  $('login-panel').hidden=true;$('admin-panel').hidden=false;
+  $('admin-login').hidden=false;$('admin-workspace').hidden=true;
+  message('admin-message','');$('admin-password').value='';
+}
+function adminControls(){
+  const busy=receiptAdmin.busy||receiptAdmin.loading;
+  $('admin-login-button').disabled=busy;$('admin-refresh').disabled=busy;$('admin-logout').disabled=busy;
+  for(const node of $('admin-list').querySelectorAll('input'))node.disabled=busy || node.dataset.unavailable==='true';
+}
+async function adminCall(action,data={}){
+  try{return await call('receiptAdminRpc',[receiptAdmin.token,action,data],45000);}
+  catch(error){
+    if(/管理者として再ログイン/.test(errorText(error))){
+      receiptAdmin.epoch++;receiptAdmin.token='';receiptAdmin.entries=[];$('admin-list').replaceChildren();
+      $('admin-workspace').hidden=true;$('admin-login').hidden=false;
+    }
+    throw error;
+  }
+}
+async function adminLoad(){
+  if(receiptAdmin.busy || receiptAdmin.loading || !receiptAdmin.token)return;
+  const epoch=receiptAdmin.epoch;receiptAdmin.loading=true;adminControls();message('admin-message','申請一覧を読み込んでいます…');
+  try{
+    const result=await adminCall('load');if(epoch!==receiptAdmin.epoch)return;
+    if(!Array.isArray(result?.expenses))throw new Error('一覧を取得できませんでした');
+    receiptAdmin.entries=result.expenses;renderAdminReceipts();message('admin-message','');
+  }catch(error){message('admin-message',errorText(error));}
+  finally{receiptAdmin.loading=false;adminControls();}
+}
+function renderAdminReceipts(){
+  const list=$('admin-list'),employee=$('admin-employee'),month=$('admin-month');
+  const employeeValue=employee.value,monthValue=month.value;
+  employee.replaceChildren(new Option('全社員',''));month.replaceChildren(new Option('全計上月',''));
+  const people=new Map();for(const e of receiptAdmin.entries)people.set(e.employeeNo,e.employeeNo+'：'+e.employeeName);
+  [...people].sort((a,b)=>Number(a[0])-Number(b[0])).forEach(([no,name])=>employee.add(new Option(name,no)));
+  [...new Set(receiptAdmin.entries.map(e=>e.accountingMonth).filter(Boolean))].sort().reverse().forEach(m=>month.add(new Option(m,m)));
+  employee.value=employeeValue;month.value=monthValue;
+  const filter=$('admin-status').value;
+  const entries=receiptAdmin.entries.filter(e=>(!employee.value||e.employeeNo===employee.value)&&(!month.value||e.accountingMonth===month.value)&&(filter==='all'||(filter==='yes'?e.originalReceived:!e.originalReceived)));
+  list.replaceChildren();message('admin-count',entries.length+'件 ／ オレンジ背景：原本受領済み');
+  if(!entries.length)list.textContent='該当する申請はありません。';
+  [...entries].reverse().forEach(entry=>{
+    const card=document.createElement('article');card.className='record'+(entry.originalReceived?' original-received':'');
+    card.innerHTML='<p><strong>'+esc(entry.employeeNo+'：'+entry.employeeName)+'</strong></p><p>申請番号：'+esc(entry.applicationNumber||'未採番')+' ／ '+esc(entry.expenseDate)+'</p><h3>'+esc(entry.category||entry.memo1||'経費')+'</h3><p class="amount">¥'+money(entry.amount)+'</p><p>'+esc(entry.projectName||entry.siteName||'')+' ／ '+esc(entry.accountingMonth||'')+'</p>';
+    const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.checked=!!entry.originalReceived;
+    check.setAttribute('aria-label','申請番号'+(entry.applicationNumber||'未採番')+'・'+entry.employeeName+'の原本受領');
+    check.dataset.unavailable=String(!entry.applicationNumber||receiptAdmin.entries.filter(e=>entryKey(e)===entryKey(entry)).length!==1);
+    check.onchange=()=>adminSetReceived(entry,check.checked);
+    label.className='admin-check';label.append(check,document.createTextNode('原本を受け取りました'));card.append(label);
+    if(entry.originalReceivedAt){const note=document.createElement('p');note.className='note';note.textContent='受領日：'+sheetDate(entry.originalReceivedAt)+' ／ '+entry.originalReceivedBy;card.append(note);}
+    list.append(card);
+  });adminControls();
+}
+async function adminSetReceived(entry,received){
+  if(receiptAdmin.busy || receiptAdmin.loading){renderAdminReceipts();return;}
+  if(!received&&!confirm('この申請の原本受領チェックを外しますか？')){renderAdminReceipts();return;}
+  receiptAdmin.busy=true;adminControls();message('admin-message','受領状態を保存しています…');
+  try{
+    const result=await adminCall('received',{...entryRequest(entry),employeeNo:entry.employeeNo,received,expectedReceivedAt:entry.originalReceivedAt||''});
+    if(!result?.entry || entryKey(result.entry)!==entryKey(entry))throw new Error('選択した申請の保存結果を確認できませんでした');
+    receiptAdmin.entries=receiptAdmin.entries.map(e=>entryKey(e)===entryKey(entry)?result.entry:e);
+    renderAdminReceipts();message('admin-message','保存しました。社員側の申請背景にも反映されます。');
+  }catch(error){message('admin-message',errorText(error)+' 「一覧を更新」で保存結果を確認してください。');renderAdminReceipts();}
+  finally{receiptAdmin.busy=false;adminControls();}
+}
+$('admin-open').onclick=showReceiptAdmin;
+$('admin-back').onclick=()=>{if(receiptAdmin.busy||receiptAdmin.loading)return;$('admin-panel').hidden=true;$('login-panel').hidden=false;};
+$('admin-login-form').onsubmit=async event=>{
+  event.preventDefault();if(receiptAdmin.busy)return;receiptAdmin.busy=true;adminControls();message('admin-message','管理者を確認しています…');
+  try{
+    const result=await call('loginReceiptAdmin',[$('admin-email').value.trim(),$('admin-password').value]);
+    if(!result?.token)throw new Error('管理者ログインを確認できませんでした');
+    receiptAdmin.epoch++;receiptAdmin.token=result.token;receiptAdmin.email=result.email;$('admin-password').value='';
+    $('admin-login').hidden=true;$('admin-workspace').hidden=false;message('admin-user',result.email);
+  }catch(error){message('admin-message',errorText(error));}
+  finally{receiptAdmin.busy=false;adminControls();}
+  if(receiptAdmin.token)await adminLoad();
+};
+$('admin-refresh').onclick=adminLoad;
+for(const id of ['admin-employee','admin-month','admin-status'])$(id).onchange=renderAdminReceipts;
+$('admin-logout').onclick=async()=>{
+  const token=receiptAdmin.token;receiptAdmin.epoch++;receiptAdmin.token='';receiptAdmin.entries=[];$('admin-list').replaceChildren();
+  $('admin-workspace').hidden=true;$('admin-login').hidden=false;message('admin-message','ログアウトしました。');
+  try{await call('receiptAdminRpc',[token,'logout',{}],10000);}catch(_){}
+};
+// The regular employee session can only read receipt colors for that employee.
+async function refreshOriginalFlags(){
+  if(!state.ready||state.saving||state.changing||state.loading||document.hidden)return;
+  const epoch=state.epoch,revision=state.revision;
+  try{
+    const result=await rpc('originalFlags',{},20000);
+    if(epoch!==state.epoch||revision!==state.revision||state.saving||state.changing||!Array.isArray(result?.expenses))return;
+    const flags=new Map(result.expenses.map(e=>[entryKey(e),e]));let changed=false;
+    state.entries=state.entries.map(e=>{const flag=flags.get(entryKey(e));if(!flag)return e;if(!!e.originalReceived!==!!flag.originalReceived)changed=true;return {...e,originalReceived:flag.originalReceived,originalReceivedAt:flag.originalReceivedAt,originalReceivedBy:flag.originalReceivedBy};});
+    if(changed)renderEntries();
+  }catch(_){/* Regular history refresh remains available if background refresh fails. */}
+}
+setInterval(refreshOriginalFlags,60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshOriginalFlags();});
+
 bind();$('expenseDate').value=today();syncControls();
 // Re-authenticate explicitly on every newly opened page; do not restore a previous employee automatically.
 stored('');
