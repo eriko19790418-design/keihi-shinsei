@@ -443,6 +443,7 @@ body.anima-printing>#anima-print-root{display:block!important;position:static!im
 #anima-print-root img{display:block!important;width:210mm!important;height:297mm!important;object-fit:contain!important;margin:0!important;padding:0!important;break-after:page;page-break-after:always}
 #anima-print-root img:last-child{break-after:auto;page-break-after:auto}
 }
+#admin-site-panel{margin:20px 0;padding:14px;border:1px solid var(--border);border-radius:10px}#admin-site-panel summary{font-weight:700;cursor:pointer}#admin-site-list{list-style:none;padding:0;max-height:360px;overflow:auto}#admin-site-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}#admin-site-list span{overflow-wrap:anywhere}#admin-site-list button{flex-shrink:0;color:#ac2f25}
 </style><style>
 #receipt-sheet{position:fixed;inset:0;z-index:100;background:#eef2f6;overflow:auto;padding:12px}#receipt-sheet .sheet-toolbar{position:sticky;top:0;background:#fff;padding:12px;border-radius:10px;z-index:1}#sheet-pages{max-width:794px;margin:16px auto}#sheet-pages img{display:block;width:100%;height:auto;background:white;box-shadow:0 2px 8px #ccd3db;margin:0 0 16px}#receipt-sheet a{display:inline-block;text-decoration:none}#receipt-sheet .actions{margin-top:10px}.viewer-head{flex-wrap:wrap}
 @media print{@page{size:A4 portrait;margin:0}html,body{margin:0!important;padding:0!important;overflow:visible!important;background:white!important}body>:not(#receipt-sheet){display:none!important}#receipt-sheet{position:static!important;padding:0!important;overflow:visible!important;background:white!important}#receipt-sheet .sheet-toolbar{display:none!important}#sheet-pages{max-width:none!important;margin:0!important}#sheet-pages img{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always}#sheet-pages img:last-child{break-after:auto;page-break-after:auto}}
@@ -452,7 +453,7 @@ body.anima-printing>#anima-print-root{display:block!important;position:static!im
 <section class="entry-card" id="admin-panel" hidden><h2>管理者・原本受領チェック</h2>
 <div id="admin-login"><form id="admin-login-form"><div class="field"><label for="admin-email">管理者メールアドレス</label><input id="admin-email" type="email" autocomplete="username" required></div><div class="field"><label for="admin-password">管理者パスワード</label><input id="admin-password" type="password" autocomplete="current-password" required></div><button id="admin-login-button" class="submit-btn" type="submit">管理者ログイン</button></form><button id="admin-back" class="plain-btn" type="button">社員ログインへ戻る</button></div>
 <p id="admin-message" class="message" role="status" aria-live="polite"></p>
-<div id="admin-workspace" hidden><div class="top-actions"><span id="admin-user"></span><button id="admin-logout" class="plain-btn" type="button">管理者ログアウト</button></div><p class="note">原本を受け取った申請にチェックしてください。オレンジ背景が受領済みです。社員の画面にも同じ色が反映されます。</p><div class="field"><label for="admin-employee">社員</label><select id="admin-employee"><option value="">全社員</option></select></div><div class="field"><label for="admin-month">経費計上月</label><select id="admin-month"><option value="">全計上月</option></select></div><div class="field"><label for="admin-status">表示する申請</label><select id="admin-status"><option value="all">すべて</option><option value="no">原本未受領</option><option value="yes">原本受領済み</option></select></div><button id="admin-refresh" class="plain-btn" type="button">一覧を更新</button><p id="admin-count" class="note"></p><div id="admin-list"></div></div></section>
+<div id="admin-workspace" hidden><div class="top-actions"><span id="admin-user"></span><button id="admin-logout" class="plain-btn" type="button">管理者ログアウト</button></div><p class="note">原本を受け取った申請にチェックしてください。オレンジ背景が受領済みです。社員の画面にも同じ色が反映されます。</p><div class="field"><label for="admin-employee">社員</label><select id="admin-employee"><option value="">全社員</option></select></div><div class="field"><label for="admin-month">経費計上月</label><select id="admin-month"><option value="">全計上月</option></select></div><div class="field"><label for="admin-status">表示する申請</label><select id="admin-status"><option value="all">すべて</option><option value="no">原本未受領</option><option value="yes">原本受領済み</option></select></div><details id="admin-site-panel"><summary>現場名の登録・削除</summary><p class="note">全社員共通の選択肢です。削除しても過去の申請は残ります。社員画面は再読み込み時、アプリに戻った時、表示中は約1分ごとに反映します。</p><form id="admin-site-form" novalidate><div class="field"><label for="admin-site-name">追加する現場名</label><input id="admin-site-name" type="text" maxlength="120" autocomplete="off"></div><button id="admin-site-add" class="plain-btn" type="submit">現場を追加</button></form><button id="admin-site-refresh" class="plain-btn" type="button">現場一覧を更新</button><p id="admin-site-message" class="message" role="status" aria-live="polite"></p><ul id="admin-site-list"></ul></details><button id="admin-refresh" class="plain-btn" type="button">一覧を更新</button><p id="admin-count" class="note"></p><div id="admin-list"></div></div></section>
 <div id="workspace" hidden><p id="load-status" class="note" role="status"></p><button type="button" class="plain-btn" id="load-retry" hidden>画面を再読み込み</button><div class="top-actions"><span id="user-label"></span><button class="plain-btn" id="logout-button" type="button">ログアウト</button></div>
 <aside id="closing" class="closing"><strong>今月の経費締め</strong><b id="closing-date">確認中…</b><p id="closing-month"></p><button type="button" class="plain-btn" id="closing-retry" hidden>締め日を再確認</button></aside>
 <section class="entry-card"><h2>新規申請</h2><form id="expense-form" novalidate><fieldset id="entry-fields" disabled style="border:0;padding:0;margin:0;min-width:0">
@@ -466,7 +467,7 @@ body.anima-printing>#anima-print-root{display:block!important;position:static!im
 <div class="field"><label for="category">店名・内容（自動入力・修正可）</label><input type="text" id="category" placeholder="店名・内容"></div>
 <div class="two"><div class="field"><label for="tax8">8%対象金額（税込）</label><input type="text" id="tax8" inputmode="numeric" pattern="[0-9,]*" placeholder="0"></div><div class="field"><label for="tax10">10%対象金額（税込）</label><input type="text" id="tax10" inputmode="numeric" pattern="[0-9,]*" placeholder="0"></div></div>
 <button class="submit-btn" id="draft-button" type="submit">⑦ 下書き登録する</button><p class="note">入力内容を確認して登録してください。下書き登録後に、履歴から申請できます。</p><p class="message" id="form-message" role="alert" aria-live="assertive" tabindex="-1"></p><button type="button" class="plain-btn" id="check-save" hidden>保存結果を確認する</button></fieldset></form></section>
-<section id="draft-section"><h2>下書き（未申請）</h2><p class="note">内容を確認して申請してください。不要な下書きは取り消せます。</p><p class="message" id="draft-message" role="status"></p><div id="draft-list"></div></section><section class="history"><div class="top-actions"><h2 style="margin:0">申請履歴</h2><button class="plain-btn" id="refresh" type="button">履歴を更新</button></div><p class="note">写真・PDFは会社用の保存先から表示します。</p><p class="message" id="history-message" role="status"></p><div id="entries-list"></div></section><p class="note" style="text-align:center">会社用・下書き取消／空欄台紙 2026.10.27-R13・原本受領管理</p></div></main>
+<section id="draft-section"><h2>下書き（未申請）</h2><p class="note">内容を確認して申請してください。不要な下書きは取り消せます。</p><p class="message" id="draft-message" role="status"></p><div id="draft-list"></div></section><section class="history"><div class="top-actions"><h2 style="margin:0">申請履歴</h2><button class="plain-btn" id="refresh" type="button">履歴を更新</button></div><p class="note">写真・PDFは会社用の保存先から表示します。</p><p class="message" id="history-message" role="status"></p><div id="entries-list"></div></section><p class="note" style="text-align:center">会社用・下書き取消／空欄台紙 2026.11.04-R14・現場管理</p></div></main>
 <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-labelledby="viewer-title" hidden><div class="viewer-head"><strong id="viewer-title">領収書</strong><button id="print-receipt" class="plain-btn" type="button" disabled>プリント</button><a id="open-receipt" class="plain-btn" target="_blank" rel="noopener" hidden>原本を開く</a><button id="share-receipt" class="plain-btn" type="button" disabled>共有</button><a id="download-receipt" class="plain-btn" download="領収書.pdf">保存</a><button type="button" class="plain-btn" id="viewer-sheet" hidden>レシートを台紙に貼る</button><button type="button" class="plain-btn" id="viewer-close">閉じる</button></div><div id="pdf-controls" class="pdf-controls" hidden><button type="button" class="plain-btn" id="pdf-prev">前へ</button><span id="pdf-page"></span><button type="button" class="plain-btn" id="pdf-next">次へ</button><button type="button" class="plain-btn" id="pdf-minus">−</button><span id="pdf-zoom">100%</span><button type="button" class="plain-btn" id="pdf-plus">＋</button></div><div class="viewer-body" id="viewer-body"><p id="viewer-message" class="message" role="status"></p><div id="viewer-content"></div></div></div>
 
 <dialog id="ocr-complete-dialog" class="ocr-complete" aria-labelledby="ocr-complete-title" aria-describedby="ocr-complete-detail"><h2 id="ocr-complete-title">読み取りが完了しました</h2><p id="ocr-complete-detail"></p><button id="ocr-complete-ok" type="button" class="submit-btn">内容を確認する</button></dialog>
@@ -570,6 +571,7 @@ function setOptions(items) {
   node.replaceChildren(new Option('選択してください',''));
   [...new Set([...(Array.isArray(items)?items:[]),'一覧にない（摘要に記入）'])].forEach(name=>node.add(new Option(name,name)));
   node.value=selected;
+  if(selected&&!node.value){const old=new Option(selected+'（選択肢から削除されました）',selected);old.disabled=true;old.dataset.removed='true';node.add(old);node.value=selected;}
 }
 async function refreshClosing(epoch=state.epoch) {
   $('closing-retry').hidden=true;message('closing-date','締め日を確認しています…');
@@ -707,6 +709,7 @@ function validateDraft(){
   if(!state.receipt)errors.push(['receipt','写真またはPDFを選択してください。']);
   if(!$('expenseDate').value || !$('expenseDate').validity.valid)errors.push(['expenseDate','利用日を入力してください。']);
   if(!$('projectName').value)errors.push(['projectName','経費の振り分け先（現場名・事務所など）を選択してください。']);
+  if($('projectName').selectedOptions[0]?.dataset.removed==='true')errors.push(['projectName','選択中の現場は一覧から削除されました。別の振り分け先を選択してください。']);
   if($('projectName').value==='一覧にない（摘要に記入）' && !$('memo2').value.trim() && !$('memo3').value.trim())errors.push(['memo2','一覧にない振り分け先を摘要2または摘要3に記入してください。']);
   if(!$('paymentMethod').value)errors.push(['paymentMethod','支払方法を選択してください。']);
   const amount=number('amount'),tax8=number('tax8'),tax10=number('tax10');
@@ -1042,7 +1045,7 @@ $('sheet-print').onclick=()=>directPrint(sheetPrintPages,'領収書貼付台紙'
 
 const receiptAdmin={token:'',email:'',entries:[],busy:false,loading:false,epoch:0};
 function showReceiptAdmin(){
-  $('login-panel').hidden=true;$('admin-panel').hidden=false;
+  resetAdminSites();$('login-panel').hidden=true;$('admin-panel').hidden=false;
   $('admin-login').hidden=false;$('admin-workspace').hidden=true;
   message('admin-message','');$('admin-password').value='';
 }
@@ -1055,7 +1058,7 @@ async function adminCall(action,data={}){
   try{return await call('receiptAdminRpc',[receiptAdmin.token,action,data],45000);}
   catch(error){
     if(/管理者として再ログイン/.test(errorText(error))){
-      receiptAdmin.epoch++;receiptAdmin.token='';receiptAdmin.entries=[];$('admin-list').replaceChildren();
+      receiptAdmin.epoch++;receiptAdmin.token='';receiptAdmin.entries=[];$('admin-list').replaceChildren();resetAdminSites();
       $('admin-workspace').hidden=true;$('admin-login').hidden=false;
     }
     throw error;
@@ -1108,7 +1111,7 @@ async function adminSetReceived(entry,received){
   finally{receiptAdmin.busy=false;adminControls();}
 }
 $('admin-open').onclick=showReceiptAdmin;
-$('admin-back').onclick=()=>{if(receiptAdmin.busy||receiptAdmin.loading)return;$('admin-panel').hidden=true;$('login-panel').hidden=false;};
+$('admin-back').onclick=()=>{if(receiptAdmin.busy||receiptAdmin.loading||adminSites.busy||adminSites.loading)return;$('admin-panel').hidden=true;$('login-panel').hidden=false;};
 $('admin-login-form').onsubmit=async event=>{
   event.preventDefault();if(receiptAdmin.busy)return;receiptAdmin.busy=true;adminControls();message('admin-message','管理者を確認しています…');
   try{
@@ -1118,12 +1121,13 @@ $('admin-login-form').onsubmit=async event=>{
     $('admin-login').hidden=true;$('admin-workspace').hidden=false;message('admin-user',result.email);
   }catch(error){message('admin-message',errorText(error));}
   finally{receiptAdmin.busy=false;adminControls();}
-  if(receiptAdmin.token)await adminLoad();
+  if(receiptAdmin.token){await adminLoad();await loadAdminSites();}
 };
 $('admin-refresh').onclick=adminLoad;
 for(const id of ['admin-employee','admin-month','admin-status'])$(id).onchange=renderAdminReceipts;
 $('admin-logout').onclick=async()=>{
-  const token=receiptAdmin.token;receiptAdmin.epoch++;receiptAdmin.token='';receiptAdmin.entries=[];$('admin-list').replaceChildren();
+  if(adminSites.busy||adminSites.loading)return;
+  const token=receiptAdmin.token;receiptAdmin.epoch++;receiptAdmin.token='';receiptAdmin.entries=[];$('admin-list').replaceChildren();resetAdminSites();
   $('admin-workspace').hidden=true;$('admin-login').hidden=false;message('admin-message','ログアウトしました。');
   try{await call('receiptAdminRpc',[token,'logout',{}],10000);}catch(_){}
 };
@@ -1141,6 +1145,69 @@ async function refreshOriginalFlags(){
 }
 setInterval(refreshOriginalFlags,60000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshOriginalFlags();});
+
+const adminSites={projects:[],version:'',busy:false,loading:false};
+function siteAdminControls(){
+  const disabled=adminSites.busy||adminSites.loading||!receiptAdmin.token;
+  $('admin-site-add').disabled=disabled||!adminSites.version;
+  $('admin-site-name').disabled=disabled;
+  $('admin-site-refresh').disabled=disabled;
+  for(const button of $('admin-site-list').querySelectorAll('button'))button.disabled=disabled||!adminSites.version;
+}
+function resetAdminSites(){
+  adminSites.projects=[];adminSites.version='';$('admin-site-list').replaceChildren();$('admin-site-name').value='';message('admin-site-message','');siteAdminControls();
+}
+function renderAdminSites(){
+  const list=$('admin-site-list');list.replaceChildren();
+  if(!adminSites.projects.length)list.textContent='登録された現場はありません。';
+  for(const name of adminSites.projects){
+    const row=document.createElement('li'),label=document.createElement('span'),button=document.createElement('button');
+    label.textContent=name;button.type='button';button.className='plain-btn';button.textContent='削除';button.setAttribute('aria-label',name+'を選択肢から削除');
+    button.onclick=()=>changeAdminSite('siteRemove',name);row.append(label,button);list.append(row);
+  }siteAdminControls();
+}
+function acceptAdminSites(result){
+  if(!Array.isArray(result?.projects)||typeof result.version!=='string')throw new Error('現場一覧を確認できませんでした');
+  adminSites.projects=result.projects;adminSites.version=result.version;renderAdminSites();
+}
+async function loadAdminSites(){
+  if(adminSites.busy||adminSites.loading||!receiptAdmin.token)return;
+  const epoch=receiptAdmin.epoch;adminSites.loading=true;siteAdminControls();message('admin-site-message','現場一覧を読み込んでいます…');
+  try{const result=await adminCall('sites');if(epoch!==receiptAdmin.epoch)return;acceptAdminSites(result);message('admin-site-message','');}
+  catch(error){if(epoch===receiptAdmin.epoch)message('admin-site-message',errorText(error));}
+  finally{adminSites.loading=false;siteAdminControls();}
+}
+async function changeAdminSite(action,name){
+  if(adminSites.busy||adminSites.loading||!receiptAdmin.token||!adminSites.version)return;
+  name=name.trim();if(!name || name.length>120){message('admin-site-message','現場名を1〜120文字で入力してください。');$('admin-site-name').focus();return;}
+  if(action==='siteRemove'&&!confirm('「'+name+'」を全社員の選択肢から削除しますか？過去の申請に記録された現場名は残ります。'))return;
+  const epoch=receiptAdmin.epoch;adminSites.busy=true;siteAdminControls();message('admin-site-message','保存しています…');
+  try{
+    const result=await adminCall(action,{name,expectedVersion:adminSites.version});if(epoch!==receiptAdmin.epoch)return;
+    acceptAdminSites(result);if(action==='siteAdd')$('admin-site-name').value='';
+    message('admin-site-message',action==='siteAdd'?'追加しました。全社員の選択肢に反映されます。':'選択肢から削除しました。過去の申請は残ります。');
+  }catch(error){if(epoch===receiptAdmin.epoch)message('admin-site-message',errorText(error)+' 「現場一覧を更新」で保存結果を確認してください。');}
+  finally{adminSites.busy=false;siteAdminControls();}
+}
+$('admin-site-form').onsubmit=event=>{event.preventDefault();changeAdminSite('siteAdd',$('admin-site-name').value);};
+$('admin-site-refresh').onclick=loadAdminSites;
+let projectsRefreshing=false,knownProjectOptions='';
+async function refreshProjectChoices(){
+  if(projectsRefreshing||!state.ready||state.saving||state.changing||state.loading||document.hidden)return;
+  const epoch=state.epoch;projectsRefreshing=true;
+  try{
+    const result=await rpc('projects',{},20000);
+    if(epoch!==state.epoch||!state.ready||state.saving||state.changing||state.loading||!Array.isArray(result?.projects))return;
+    const key=JSON.stringify(result.projects);if(key===knownProjectOptions)return;
+    knownProjectOptions=key;const selected=$('projectName').value;setOptions(result.projects);
+    if(selected && !$('projectName').value){
+      const option=new Option(selected+'（選択肢から削除されました）',selected);option.disabled=true;option.dataset.removed='true';$('projectName').add(option);$('projectName').value=selected;
+    }
+  }catch(_){/* Explicit refresh/re-login is also available. */}
+  finally{projectsRefreshing=false;}
+}
+setInterval(refreshProjectChoices,60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshProjectChoices();});
 
 bind();$('expenseDate').value=today();syncControls();
 // Re-authenticate explicitly on every newly opened page; do not restore a previous employee automatically.
