@@ -446,6 +446,8 @@ body.anima-printing>#anima-print-root{display:block!important;position:static!im
 #admin-site-panel{margin:20px 0;padding:14px;border:1px solid var(--border);border-radius:10px}#admin-site-panel summary{font-weight:700;cursor:pointer}#admin-site-list{list-style:none;padding:0;max-height:360px;overflow:auto}#admin-site-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}#admin-site-list span{overflow-wrap:anywhere}#admin-site-list button{flex-shrink:0;color:#ac2f25}
 .admin-payment{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.admin-amex-badge{display:inline-block;padding:4px 10px;border:1px solid #2866a4;border-radius:6px;background:#e6f0ff;color:#164d80;font-size:14px;font-weight:800;white-space:nowrap}
 .unreceived-history>h3,.received-history>h3{font-size:17px;color:var(--navy-900);margin:22px 0 12px}.received-month{border:1px solid #dd9b3f;border-radius:10px;background:#fff8eb;margin:12px 0;overflow:hidden}.received-month>summary{padding:14px 12px;font-weight:700;cursor:pointer;min-height:48px;overflow-wrap:anywhere}.received-month>summary:focus-visible{outline:3px solid #2866a4;outline-offset:-3px}.received-month-cards{padding:0 10px 10px}.received-month-cards .record:last-child{margin-bottom:0}
+
+.receipt-later-note{background:#fff1cd;color:#754d00;border:1px solid #c58a1b;padding:10px;border-radius:6px;font-weight:bold}#receipt-later[aria-pressed="true"]{background:#fff1cd;border:2px solid #aa7100;color:#754d00}
 </style><style>
 #receipt-sheet{position:fixed;inset:0;z-index:100;background:#eef2f6;overflow:auto;padding:12px}#receipt-sheet .sheet-toolbar{position:sticky;top:0;background:#fff;padding:12px;border-radius:10px;z-index:1}#sheet-pages{max-width:794px;margin:16px auto}#sheet-pages img{display:block;width:100%;height:auto;background:white;box-shadow:0 2px 8px #ccd3db;margin:0 0 16px}#receipt-sheet a{display:inline-block;text-decoration:none}#receipt-sheet .actions{margin-top:10px}.viewer-head{flex-wrap:wrap}
 @media print{@page{size:A4 portrait;margin:0}html,body{margin:0!important;padding:0!important;overflow:visible!important;background:white!important}body>:not(#receipt-sheet){display:none!important}#receipt-sheet{position:static!important;padding:0!important;overflow:visible!important;background:white!important}#receipt-sheet .sheet-toolbar{display:none!important}#sheet-pages{max-width:none!important;margin:0!important}#sheet-pages img{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;break-after:page;page-break-after:always}#sheet-pages img:last-child{break-after:auto;page-break-after:auto}}
@@ -460,7 +462,7 @@ body.anima-printing>#anima-print-root{display:block!important;position:static!im
 <aside id="closing" class="closing"><strong>今月の経費締め</strong><b id="closing-date">確認中…</b><p id="closing-month"></p><button type="button" class="plain-btn" id="closing-retry" hidden>締め日を再確認</button></aside>
 <section class="entry-card"><h2>新規申請</h2><form id="expense-form" novalidate><fieldset id="entry-fields" disabled style="border:0;padding:0;margin:0;min-width:0">
 <div class="field"><label for="employeeNo">社員番号・氏名</label><input id="employeeNo" type="text" readonly></div>
-<div class="field"><label for="receipt">① レシートの読み取り</label><div class="receipt-upload"><div id="receipt-preview" class="receipt-preview">タップして撮影・写真・PDFを選択</div><input type="file" id="receipt" accept="image/*,application/pdf,.pdf"></div><div class="actions" style="margin-top:10px"><button class="plain-btn" id="take-photo" type="button">写真を撮る</button><button class="plain-btn" id="pick-album" type="button">アルバムから</button><button class="plain-btn" id="pick-pdf" type="button">PDFを選ぶ</button></div><input id="camera-file" type="file" accept="image/*" capture="environment" hidden><input id="album-file" type="file" accept="image/*" hidden><input id="pdf-file" type="file" accept="application/pdf,.pdf" hidden><p class="note">写真・PDFは6MB以内。読み取り後、各項目をご確認ください。</p><button id="preview-action" class="plain-btn" type="button" hidden>選んだ写真・PDFを確認</button><p id="ocr-status" class="note" role="status"></p><div class="actions"><button class="plain-btn" id="ocr-retry" type="button" hidden>もう一度読み取る</button><button class="plain-btn" id="ocr-stop" type="button" hidden>手入力に切り替える</button><button class="plain-btn danger-btn" id="clear-receipt" type="button" hidden>選択を取り消す</button></div></div>
+<div class="field"><label for="receipt">① レシートの読み取り</label><div class="receipt-upload"><div id="receipt-preview" class="receipt-preview">タップして撮影・写真・PDFを選択</div><input type="file" id="receipt" accept="image/*,application/pdf,.pdf"></div><div class="actions" style="margin-top:10px"><button class="plain-btn" id="take-photo" type="button">写真を撮る</button><button class="plain-btn" id="pick-album" type="button">アルバムから</button><button class="plain-btn" id="pick-pdf" type="button">PDFを選ぶ</button><button class="plain-btn" id="receipt-later" type="button" aria-pressed="false">領収書をあとで提出する</button></div><input id="camera-file" type="file" accept="image/*" capture="environment" hidden><input id="album-file" type="file" accept="image/*" hidden><input id="pdf-file" type="file" accept="application/pdf,.pdf" hidden><p class="note">写真・PDFは6MB以内。読み取り後、各項目をご確認ください。</p><button id="preview-action" class="plain-btn" type="button" hidden>選んだ写真・PDFを確認</button><p id="ocr-status" class="note" role="status"></p><div class="actions"><button class="plain-btn" id="ocr-retry" type="button" hidden>もう一度読み取る</button><button class="plain-btn" id="ocr-stop" type="button" hidden>手入力に切り替える</button><button class="plain-btn danger-btn" id="clear-receipt" type="button" hidden>選択を取り消す</button></div></div>
 <div class="field"><label for="expenseDate">② 利用日（自動入力・修正可）</label><input id="expenseDate" type="date" required></div>
 <div class="field"><label for="projectName">③ 経費の振り分け先</label><select id="projectName" required><option value="">選択してください</option></select><p class="note">振り分け先の登録は管理者が行います。一覧にない場合は「一覧にない（摘要に記入）」を選び、摘要2または摘要3に振り分け先を記入してください。</p></div>
 <div class="field"><label for="memo1">④ 摘要1（自動入力・修正可）</label><textarea id="memo1" rows="2" placeholder="レシートの内容を自動入力します"></textarea><label for="memo2">摘要2</label><textarea id="memo2" rows="2" placeholder="必要事項を自由に入力してください"></textarea><label for="memo3">摘要3</label><textarea id="memo3" rows="2" placeholder="必要事項を自由に入力してください"></textarea></div>
@@ -469,7 +471,8 @@ body.anima-printing>#anima-print-root{display:block!important;position:static!im
 <div class="field"><label for="category">店名・内容（自動入力・修正可）</label><input type="text" id="category" placeholder="店名・内容"></div>
 <div class="two"><div class="field"><label for="tax8">8%対象金額（税込）</label><input type="text" id="tax8" inputmode="numeric" pattern="[0-9,]*" placeholder="0"></div><div class="field"><label for="tax10">10%対象金額（税込）</label><input type="text" id="tax10" inputmode="numeric" pattern="[0-9,]*" placeholder="0"></div></div>
 <button class="submit-btn" id="draft-button" type="submit">⑦ 下書き登録する</button><p class="note">入力内容を確認して登録してください。下書き登録後に、履歴から申請できます。</p><p class="message" id="form-message" role="alert" aria-live="assertive" tabindex="-1"></p><button type="button" class="plain-btn" id="check-save" hidden>保存結果を確認する</button></fieldset></form></section>
-<section id="draft-section"><h2>下書き（未申請）</h2><p class="note">内容を確認して申請してください。不要な下書きは取り消せます。</p><p class="message" id="draft-message" role="status"></p><div id="draft-list"></div></section><section class="history"><div class="top-actions"><h2 style="margin:0">申請履歴</h2><button class="plain-btn" id="refresh" type="button">履歴を更新</button></div><p class="note">写真・PDFは会社用の保存先から表示します。</p><p class="message" id="history-message" role="status"></p><div id="entries-list"></div></section><p class="note" style="text-align:center">会社用・下書き取消／空欄台紙 2026.11.05-R16・受領済み月別表示／AMEX表示</p></div></main>
+<section id="draft-section"><h2>下書き（未申請）</h2><p class="note">内容を確認して申請してください。不要な下書きは取り消せます。</p><p class="message" id="draft-message" role="status"></p><div id="draft-list"></div></section><section class="history"><div class="top-actions"><h2 style="margin:0">申請履歴</h2><button class="plain-btn" id="refresh" type="button">履歴を更新</button></div><p class="note">写真・PDFは会社用の保存先から表示します。</p><p class="message" id="history-message" role="status"></p><div id="entries-list"></div></section><p class="note" style="text-align:center">会社用・下書き取消／空欄台紙 2026.11.05-R17・領収書あとで提出対応</p></div></main>
+<input type="file" id="later-receipt-file" accept="image/*,application/pdf,.pdf" hidden>
 <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-labelledby="viewer-title" hidden><div class="viewer-head"><strong id="viewer-title">領収書</strong><button id="print-receipt" class="plain-btn" type="button" disabled>プリント</button><a id="open-receipt" class="plain-btn" target="_blank" rel="noopener" hidden>原本を開く</a><button id="share-receipt" class="plain-btn" type="button" disabled>共有</button><a id="download-receipt" class="plain-btn" download="領収書.pdf">保存</a><button type="button" class="plain-btn" id="viewer-sheet" hidden>レシートを台紙に貼る</button><button type="button" class="plain-btn" id="viewer-close">閉じる</button></div><div id="pdf-controls" class="pdf-controls" hidden><button type="button" class="plain-btn" id="pdf-prev">前へ</button><span id="pdf-page"></span><button type="button" class="plain-btn" id="pdf-next">次へ</button><button type="button" class="plain-btn" id="pdf-minus">−</button><span id="pdf-zoom">100%</span><button type="button" class="plain-btn" id="pdf-plus">＋</button></div><div class="viewer-body" id="viewer-body"><p id="viewer-message" class="message" role="status"></p><div id="viewer-content"></div></div></div>
 
 <dialog id="ocr-complete-dialog" class="ocr-complete" aria-labelledby="ocr-complete-title" aria-describedby="ocr-complete-detail"><h2 id="ocr-complete-title">読み取りが完了しました</h2><p id="ocr-complete-detail"></p><button id="ocr-complete-ok" type="button" class="submit-btn">内容を確認する</button></dialog>
@@ -479,7 +482,7 @@ body.anima-printing>#anima-print-root{display:block!important;position:static!im
 const $ = id => document.getElementById(id);
 const money = value => Number(value || 0).toLocaleString('ja-JP');
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const state = { token:'', employeeNo:'', epoch:0, entries:[], ready:false, login:false, loading:false, saving:false, changing:false, receiptVersion:0, preparing:false, scanning:false, receipt:null, operationId:'', revision:0 };
+const state = { token:'', employeeNo:'', epoch:0, entries:[], ready:false, login:false, loading:false, saving:false, changing:false, receiptVersion:0, preparing:false, scanning:false, receipt:null, receiptLater:false, operationId:'', revision:0 };
 let pdfLoadingTask=null,pdfDoc=null, pdfPage=1, pdfZoom=1, pdfTask=null, viewerSequence=0, pdfLibrary=null, blobUrl='';
 function message(id,text) { $(id).textContent=text; }
 function errorText(error) { return String(error?.message || error || '操作に失敗しました'); }
@@ -536,6 +539,7 @@ function syncControls() {
   $('draft-button').disabled=!state.ready || locked || state.preparing || state.scanning;
   $('draft-button').textContent=state.saving?'保存しています…':'⑦ 下書き登録する';
   for(const id of ['receipt','take-photo','pick-album','pick-pdf','camera-file','album-file','pdf-file']) $(id).disabled=locked;
+  $('receipt-later').disabled=locked; $('receipt-later').setAttribute('aria-pressed',String(state.receiptLater));$('receipt-later').textContent=state.receiptLater?'✓ あとで提出（押すと解除）':'領収書をあとで提出する';
   $('clear-receipt').hidden=!state.receipt && !state.preparing;
   $('clear-receipt').disabled=locked;
   $('preview-action').hidden=!state.receipt;
@@ -550,7 +554,7 @@ function syncControls() {
 function clearReceipt(ask=false) {
   if(state.saving || state.changing)return;
   if(ask && !confirm('選択した写真・PDFと自動入力欄をクリアしますか？'))return;
-  state.receiptVersion++;state.preparing=false;state.scanning=false;state.receipt=null;state.operationId='';
+  state.receiptVersion++;state.preparing=false;state.scanning=false;state.receipt=null;state.receiptLater=false;state.operationId='';
   if($('ocr-complete-dialog').open)$('ocr-complete-dialog').close();
   for(const id of ['receipt','camera-file','album-file','pdf-file']) $(id).value='';
   for(const id of ['amount','category','memo1','tax8','tax10']) $(id).value='';
@@ -649,7 +653,7 @@ async function handleReceiptFile(file) {
   clearReceipt();const version=state.receiptVersion,epoch=state.epoch;
   state.preparing=true;message('form-message','');message('receipt-preview','写真・PDFを読み込んでいます…');syncControls();
   try {
-    const data=await preparePhoto(file);if(version!==state.receiptVersion || epoch!==state.epoch)return;
+    const data=await preparePhoto(file);if(version!==state.receiptVersion || epoch!==state.epoch)return;state.receiptLater=false;
     state.receipt={data,name:file.name,images:[],preview:''};state.operationId=newId();
     if(data.startsWith('data:application/pdf')) {
       message('receipt-preview','PDFのプレビューを準備しています…');syncControls();
@@ -708,7 +712,7 @@ function clearFieldError(node){
 function validateDraft(){
   const errors=[];
   for(const id of ['receipt','expenseDate','projectName','memo2','paymentMethod','amount','tax8','tax10'])clearFieldError($(id));
-  if(!state.receipt)errors.push(['receipt','写真またはPDFを選択してください。']);
+  if(!state.receipt&&!state.receiptLater)errors.push(['receipt','写真・PDFを選ぶか、「領収書をあとで提出する」を押してください。']);
   if(!$('expenseDate').value || !$('expenseDate').validity.valid)errors.push(['expenseDate','利用日を入力してください。']);
   if(!$('projectName').value)errors.push(['projectName','経費の振り分け先（現場名・事務所など）を選択してください。']);
   if($('projectName').selectedOptions[0]?.dataset.removed==='true')errors.push(['projectName','選択中の現場は一覧から削除されました。別の振り分け先を選択してください。']);
@@ -739,7 +743,7 @@ function acceptSavedDraft(result,id) {
   // Mark completion before touching the form or drawing history.
   state.saving=false;state.entries=state.entries.filter(item=>entryKey(item)!==entryKey(entry)).concat(entry);
   resetForm();syncControls();
-  const done='下書きを登録しました。申請番号：'+(entry.applicationNumber || '履歴をご確認ください')+'。';
+  const done=(entry.receiptLater?'領収書をあとで提出する下書きを登録しました。申請番号：':'下書きを登録しました。申請番号：')+(entry.applicationNumber || '履歴をご確認ください')+'。';
   message('form-message',done+(result.warning || '履歴で確認して申請してください。'));
   try {renderEntries();}catch(error){message('history-message','下書きは保存済みです。履歴の表示を更新してください。');}
   try {$('draft-section').scrollIntoView({behavior:'smooth'});}catch(_){}
@@ -787,9 +791,10 @@ async function checkSaveResult() {
 async function saveDraft(event) {
   event.preventDefault();if(state.saving || state.changing || state.preparing || state.scanning || !state.ready)return;
   if(!validateDraft())return;
-  const payload={id:state.operationId || (state.operationId=newId()),photoData:state.receipt.data,previewPhotoData:state.receipt.preview,expenseDate:$('expenseDate').value,projectName:$('projectName').value,paymentMethod:$('paymentMethod').value,amount:number('amount'),category:$('category').value,memo1:$('memo1').value,memo2:$('memo2').value,memo3:$('memo3').value,tax8:number('tax8'),tax10:number('tax10')};
+  const payload={id:state.operationId || (state.operationId=newId()),photoData:state.receipt?.data||'',previewPhotoData:state.receipt?.preview||'',receiptLater:state.receiptLater&&!state.receipt,expenseDate:$('expenseDate').value,projectName:$('projectName').value,paymentMethod:$('paymentMethod').value,amount:number('amount'),category:$('category').value,memo1:$('memo1').value,memo2:$('memo2').value,memo3:$('memo3').value,tax8:number('tax8'),tax10:number('tax10')};
   const epoch=state.epoch;state.revision++;state.saving=true;$('check-save').hidden=true;message('form-message','会社の保存先に下書きを登録しています…');syncControls();
   try {
+    if(state.receiptLater){try{const capabilities=await rpc('receiptLaterCapabilities');if(epoch!==state.epoch)return;if(!capabilities?.receiptLater)throw new Error('未対応');}catch(error){message('form-message','あとで提出機能の保存先がまだ更新されていません。経理担当者にR17の追加コードと新バージョンのデプロイをご確認ください。');return;}}
     const result=await saveWithVerification(payload);if(epoch!==state.epoch)return;
     acceptSavedDraft(result,payload.id);
   }catch(error) {
@@ -827,10 +832,11 @@ function renderEntries() {
     const card=document.createElement('article');card.className='record'+(entry.originalReceived?' original-received':'');
     const destinations=[...new Set([entry.siteName,entry.projectName].filter(Boolean))].join(' ／ ');
     card.innerHTML='<p class="note">申請番号：'+esc(entry.applicationNumber || '確認中')+'</p><span class="badge '+(entry.status==='申請取消'?'cancelled':'')+'">'+esc(entry.status)+'</span><p class="note">'+esc(entry.expenseDate)+' ・ '+esc(entry.paymentMethod)+'</p><h3>'+esc(entry.category || entry.memo1 || '経費')+'</h3><p class="amount">¥'+money(entry.amount)+'</p><p>経費の振り分け先：'+esc(destinations)+'</p><p>'+esc([entry.memo1,entry.memo2,entry.memo3].filter(Boolean).join(' ／ '))+'</p><p class="note">経費計上月：'+esc(entry.accountingMonth || '申請時に確定')+'</p>';
+    if(entry.receiptLater){const note=document.createElement('p');note.className='receipt-later-note';note.textContent='領収書：あとで提出（未添付）';card.append(note);}
     const actions=document.createElement('div');actions.className='actions';
-    const view=recordButton(entry.hasReceipt?'写真・PDFを見る':'領収書の保存先なし',()=>openStoredReceipt(entry));view.disabled=!entry.hasReceipt || state.changing || state.saving;view.dataset.unavailable=String(!entry.hasReceipt);actions.append(view);
+    const view=recordButton(entry.hasReceipt?'写真・PDFを見る':entry.receiptLater?'領収書：あとで提出':'領収書の保存先なし',()=>openStoredReceipt(entry));view.disabled=!entry.hasReceipt || state.changing || state.saving;view.dataset.unavailable=String(!entry.hasReceipt);actions.append(view);if(entry.receiptLater)actions.append(recordButton('領収書を提出する',()=>chooseDeferredReceipt(entry)));
     if(['申請済','未処理'].includes(entry.status))actions.append(recordButton('レシートを台紙に貼る',()=>openReceiptSheet(entry)));
-    if(entry.status==='下書き'){actions.append(recordButton('この内容で申請',()=>changeStatus('submit',entry)));actions.append(recordButton('下書き取り消し',()=>changeStatus('cancel',entry),true));}
+    if(entry.status==='下書き'){actions.append(recordButton(entry.receiptLater?'領収書はあとで提出して申請':'この内容で申請',()=>changeStatus('submit',entry)));actions.append(recordButton('下書き取り消し',()=>changeStatus('cancel',entry),true));}
     if(['申請済','未処理'].includes(entry.status))actions.append(recordButton('申請取り消し',()=>changeStatus('cancel',entry),true));
     if(['申請通知待ち','取消通知待ち'].includes(entry.notification))actions.append(recordButton('メール再送',()=>changeStatus(entry.status==='申請取消'?'cancel':'submit',entry)));
     card.append(actions);
@@ -898,10 +904,10 @@ function bind() {
   $('ocr-complete-ok').onclick=()=>{$('ocr-complete-dialog').close();$('expenseDate').scrollIntoView({behavior:'smooth',block:'center'});$('expenseDate').focus({preventScroll:true});};
   $('clear-receipt').onclick=()=>clearReceipt(true);$('ocr-stop').onclick=stopOcr;$('ocr-retry').onclick=()=>runOcr();
   $('refresh').onclick=()=>load();$('load-retry').onclick=()=>load();$('closing-retry').onclick=()=>refreshClosing();
-  $('logout-button').onclick=()=>{if(state.receipt && !confirm('入力中の内容を破棄してログアウトしますか？'))return;const token=state.token;showLogin();call('expenseRpc',[token,'logout',{}],10000).catch(()=>{});};
+  $('logout-button').onclick=()=>{if((state.receipt||state.receiptLater) && !confirm('入力中の内容を破棄してログアウトしますか？'))return;const token=state.token;showLogin();call('expenseRpc',[token,'logout',{}],10000).catch(()=>{});};
   $('viewer-close').onclick=closeViewer;document.addEventListener('keydown',event=>{if(event.key==='Escape')closeViewer();});
   $('preview-action').onclick=()=>{if(state.receipt){const sequence=startViewer();showReceipt(state.receipt.data,state.receipt.name,sequence,state.receipt.preview);}};
-  window.addEventListener('beforeunload',event=>{if(state.receipt){event.preventDefault();event.returnValue='';}});
+  window.addEventListener('beforeunload',event=>{if(state.receipt||state.receiptLater){event.preventDefault();event.returnValue='';}});
 }
 
 
@@ -1121,6 +1127,7 @@ function renderAdminReceipts(){
   [...entries].reverse().forEach(entry=>{
     const card=document.createElement('article');card.className='record'+(entry.originalReceived?' original-received':'');
     card.innerHTML='<p><strong>'+esc(entry.employeeNo+'：'+entry.employeeName)+'</strong></p><p>申請番号：'+esc(entry.applicationNumber||'未採番')+' ／ '+esc(entry.expenseDate)+'</p><h3>'+esc(entry.category||entry.memo1||'経費')+'</h3><p class="amount">¥'+money(entry.amount)+'</p><p>'+esc(entry.projectName||entry.siteName||'')+' ／ '+esc(entry.accountingMonth||'')+'</p>';
+    if(entry.receiptLater){const pending=document.createElement('p');pending.className='receipt-later-note';pending.textContent='領収書：あとで提出（未添付）';card.append(pending);}
     const payment=document.createElement('p');payment.className='admin-payment';
     const isAmex=/AMEX|アメックス|AMERICAN\s*EXPRESS/i.test(String(entry.paymentMethod||'').normalize('NFKC'));
     if(isAmex){const badge=document.createElement('span');badge.className='admin-amex-badge';badge.textContent='会社AMEX';payment.append(badge);}
@@ -1249,4 +1256,27 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshPro
 bind();$('expenseDate').value=today();syncControls();
 // Re-authenticate explicitly on every newly opened page; do not restore a previous employee automatically.
 stored('');
+let deferredReceiptUpload=null;
+function setReceiptLater(){
+ if(state.saving||state.changing)return;
+ if(state.receipt&&!confirm('選択した領収書を外して「あとで提出」にしますか？ 入力内容は残します。'))return;
+ state.receiptVersion++;state.preparing=false;state.scanning=false;state.receipt=null;state.receiptLater=!state.receiptLater;state.operationId='';
+ for(const id of ['receipt','camera-file','album-file','pdf-file'])$(id).value='';
+ $('receipt-preview').classList.remove('has-image');message('receipt-preview',state.receiptLater?'領収書はあとで提出します。②〜⑥を手入力してください。':'タップして撮影・写真・PDFを選択');message('ocr-status','');clearFieldError($('receipt'));syncControls();
+}
+function chooseDeferredReceipt(entry){deferredReceiptUpload={entry,uploadId:newId()};$('later-receipt-file').value='';$('later-receipt-file').click();}
+async function submitDeferredReceipt(file){
+ if(!file||!deferredReceiptUpload||state.saving||state.changing)return;
+ const operation=deferredReceiptUpload,epoch=state.epoch;state.changing=true;syncControls();message('history-message','領収書を提出しています…');
+ try{
+  const photoData=await preparePhoto(file);if(epoch!==state.epoch)return;
+  const result=await rpc('attachReceipt',{...entryRequest(operation.entry),uploadId:operation.uploadId,photoData},90000);if(epoch!==state.epoch)return;
+  if(!result?.entry||entryKey(result.entry)!==entryKey(operation.entry))throw new Error('本人の提出結果を確認できません');
+  state.entries=state.entries.map(e=>entryKey(e)===entryKey(result.entry)?result.entry:e);state.revision++;deferredReceiptUpload=null;renderEntries();message('history-message',result.warning||'領収書を提出しました');
+ }catch(error){if(epoch===state.epoch)message('history-message',errorText(error)+' 履歴を更新して提出済みか確認してください。申請を作り直す必要はありません。');}
+ finally{if(epoch===state.epoch){state.changing=false;syncControls();}}
+}
+$('receipt-later').onclick=setReceiptLater;
+$('later-receipt-file').onchange=()=>submitDeferredReceipt($('later-receipt-file').files[0]);
+
 </script></body></html>
